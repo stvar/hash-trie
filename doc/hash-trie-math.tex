@@ -1,0 +1,877 @@
+% Copyright (C) 2016  Stefan Vargyas
+% 
+% This file is part of Hash-Trie.
+% 
+% Hash-Trie is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+% 
+% Hash-Trie is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with Hash-Trie.  If not, see <http://www.gnu.org/licenses/>.
+
+\documentclass[a4paper,9pt,leqno]{article}
+\usepackage[hang]{footmisc}
+\usepackage[fleqn]{amsmath}
+\usepackage{listings}
+\usepackage{relsize}
+\usepackage{tocloft}
+\usepackage{quoting}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{suffix}
+\usepackage{ifpdf}
+\usepackage{calc}
+\usepackage{url}
+
+\ifpdf
+\pdfinfo{
+/Title(The Hash-Trie of Knuth & Liang -- Addendum)
+/Author(Stefan Vargyas, stvar@yahoo.com)
+/Creator(LaTeX)
+}
+\fi
+
+\newcommand{\vargyas}{\c{S}tefan Vargyas}
+
+\renewcommand{\ttdefault}{pcr}
+\renewcommand{\familydefault}{\sfdefault}
+
+\addtolength{\textheight}{3.4cm}
+\addtolength{\topmargin}{-2.1cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\evensidemargin}{-1.5cm}
+\addtolength{\oddsidemargin}{-1.5cm}
+
+\renewcommand{\=}{\protect\nobreakdash-\hspace{0pt}}
+\renewcommand{\~}{\protect\nobreakdash--\hspace{0pt}}
+
+\setlength{\parindent}{0pt}
+
+\newcommand{\plusplus}{\textbf{\raisebox{1pt}{++}}}
+\newcommand{\cplusplus}{\textbf{C}\plusplus}
+\newcommand{\Hashtrie}{Hash\=\!Trie}
+\newcommand{\HashTrie}{\textbf{\Hashtrie}}
+
+\newcommand{\ie}{i.e.}
+\newcommand{\code}[1]{{\tt{#1}}}
+
+\makeatletter
+% stev: alter the definition of key 'numbers':
+\lst@Key{showskiplines}f[f]{%
+	\lstKV@SetIf{#1}\lst@ifshowskiplines}
+\let\lst@ifskiplines\iffalse
+\newcommand\skipnumbering[1]{%
+	\setcounter{lstnumber}{\numexpr#1-1\relax}%
+	\let\lst@ifskiplines\iftrue
+	\\\lst@PlaceNumber
+	\let\lst@ifskiplines\iffalse
+	\lst@ifshowskiplines...\fi
+}
+\def\lst@renderskiplinessymbol{{%
+	\relsize{1}%
+	\lst@skiplinessymbol
+	\hspace{-.11em}}%
+}
+\def\lst@numberorsymbol{
+	\lst@ifskiplines
+	\makebox[\widthof{\lst@renderskiplinessymbol}+.11em][l]{%
+		\lst@renderskiplinessymbol}%
+	\else
+	\thelstnumber
+	\fi
+}
+\def\lst@defskiplinessymbol{%
+	\textbf{.\hspace{.11em}.\hspace{.11em}.}}
+\def\lst@skiplinessymbol{}
+\lst@Key{skiplinessymbol}{%
+	\lst@defskiplinessymbol}{%
+	\def\lst@skiplinessymbol{#1}}
+\lst@Key{numbers}{none}{%
+	\let\lst@PlaceNumber\@empty
+	\lstKV@SwitchCases{#1}{%
+		none&\\%
+		left&\def\lst@PlaceNumber{%
+			\llap{%
+				\normalfont
+				\lst@numberstyle{\lst@numberorsymbol}%
+				\kern\lst@numbersep}}\\%
+		right&\def\lst@PlaceNumber{%
+			\rlap{%
+				\normalfont
+				\kern\linewidth \kern\lst@numbersep
+				\lst@numberstyle{\lst@numberorsymbol}}}%
+	}{%
+		\PackageError{Listings}{Numbers #1 unknown}\@ehc
+	}%
+}
+\makeatother
+
+% http://www.bollchen.de/blog/2011/04/good-looking-line-breaks-with-the-listings-package/
+\newcommand{\shellprebreak}{%
+	\raisebox{0ex}[0ex][0ex]{%
+		\ensuremath{\hookleftarrow}}}
+\newcommand{\shellpostbreak}{%
+	\raisebox{0ex}[0ex][0ex]{%
+		\ensuremath{\hookrightarrow}\hspace{2pt}}}
+\newcommand{\srcprebreak}{%
+	\shellprebreak}
+\newcommand{\srcpostbreak}{%
+	\shellpostbreak}
+
+\newlength\shelllinewidth
+\setlength\shelllinewidth{1.35\linewidth}
+
+\newcommand{\shellskipamount}{%
+	\baselineskip}
+\newcommand{\shellinnerskipamount}{%
+	2\parskip}
+\newcommand{\shellafterskipamount}{%
+	\parskip}
+\newcommand{\shellafterskip}{%
+	\addvspace{-\shellafterskipamount}}%
+\newcommand{\srcskipamount}{%
+	\shellskipamount}
+\newcommand{\srcafterskipamount}{%
+	\shellafterskipamount}
+\newcommand{\srcafterskip}{%
+	\addvspace{-\srcafterskipamount}}%
+
+\lstdefinestyle{srclistingstyle}{%
+	numbers=left,
+	numbersep=1.3em,
+	numberstyle=\tiny,
+	showstringspaces=false,
+	basicstyle=\smaller\ttfamily,
+	breakindent=0pt,breakautoindent=false,
+	breaklines=true,breakatwhitespace=true,
+	linewidth=\shelllinewidth,lineskip=1.05pt,
+	abovecaptionskip=0pt,
+	belowcaptionskip=0pt,
+	%!!!aboveskip=\srcskipamount,
+	%!!!belowskip=\srcskipamount,
+	postbreak=\srcpostbreak,
+	prebreak=\srcprebreak,
+	emphstyle=\textbf,
+}
+\lstdefinestyle{cpplistingstyle}{%
+	style=srclistingstyle,
+	language=[GNU]C++,
+	tabsize=4,
+	emph={
+		alignas,
+		alignof,
+		auto,
+		decltype,
+		nullptr,
+		constexpr,
+		final,
+		override,
+		static_assert,
+		noexcept,
+		__func__,
+		__FILE__,
+		__LINE__,
+		__VA_ARGS__,
+	},
+}
+\lstnewenvironment{hashtrielisting}[1][1]{%
+	\lstset{%
+		literate={!!!INT}{$\ INT\!\!:$}4,
+		style=cpplistingstyle,
+		showskiplines=true,
+		lineskip=-.82pt,
+		firstnumber=#1,
+		escapechar=@,
+	}%
+}{%
+	%!!!\srcafterskip
+}
+
+\swapnumbers
+\theoremstyle{plain}
+\newtheorem{fact}{Fact}
+\newtheorem{axioms}[fact]{Axioms}
+\newtheorem{prop}[fact]{Proposition}
+\theoremstyle{definition}
+\newtheorem{defn}[fact]{Definition}
+\newtheorem{notn}[fact]{Notation}
+\theoremstyle{remark}
+\newtheorem{rem}[fact]{Remark}
+
+\newcommand{\floor}[1]{\lfloor#1\rfloor}
+\newcommand{\ceil}[1]{\lceil#1\rceil}
+\newcommand{\rimpl}{\:\:\Longleftarrow\:\:}
+\newcommand{\impll}{\:\:\Longrightarrow\:\:}
+\newcommand{\impl}{\impll}%!!!{\:\:\Rightarrow\:\:}
+\newcommand{\iffl}{\:\:\Longleftrightarrow\:\:}
+\newcommand{\qimpl}{``$\Rightarrow$''}
+\newcommand{\qrimpl}{``$\Leftarrow$''}
+
+\newcommand{\parref}[1]{(\ref{#1})}
+\newcommand{\by}[1]{{#1}}
+\newcommand{\bydef}{\by{def}}
+\newcommand{\bynot}{\by{not}}
+\newcommand{\byhyp}{\by{hyp}}
+\newcommand{\symby}[2]{\stackrel{#1}{{#2}}}
+\newcommand{\symbyrm}[2]{\symby{{\rm\scriptstyle{#1}}}{#2}}
+\newcommand{\symbyit}[2]{\symby{{\mit\scriptstyle{#1}}}{#2}}
+\newcommand{\implby}[1]{\symbyrm{#1}{\impll}}
+\newcommand{\implbyref}[1]{\implby{\parref{#1}}}
+\newcommand{\implbyhyp}{\implby{\byhyp}}
+\newcommand{\iffby}[1]{\symbyrm{#1}{\iffl}}
+\newcommand{\iffbydef}{\iffby{\bydef}}
+\newcommand{\iffbyref}[1]{\iffby{\parref{#1}}}
+\newcommand{\eqby}[1]{\symbyrm{#1}{=}}
+\newcommand{\eqbydef}{\eqby{\bydef}}
+\newcommand{\eqbyref}[1]{\eqby{\parref{#1}}}
+\newcommand{\eqbyhyp}{\eqby{\byhyp}}
+\newcommand{\eqbynot}{\eqby{\bynot}}
+\newcommand{\leby}[1]{\symbyrm{#1}{\le}}
+\newcommand{\lebyref}[1]{\leby{\parref{#1}}}
+\newcommand{\lebyhyp}{\leby{\byhyp}}
+\newcommand{\geby}[1]{\symbyrm{#1}{\geq}}
+\newcommand{\gebyref}[1]{\geby{\parref{#1}}}
+\newcommand{\gebyhyp}{\geby{\byhyp}}
+\newcommand{\gt}{>}
+\newcommand{\gtby}[1]{\symbyrm{#1}{\gt}}
+\newcommand{\gtbyref}[1]{\gtby{\parref{#1}}}
+\newcommand{\gtbyhyp}{\gtby{\byhyp}}
+\newcommand{\lt}{<}
+\newcommand{\ltby}[1]{\symbyrm{#1}{\lt}}
+\newcommand{\ltbyref}[1]{\ltby{\parref{#1}}}
+\newcommand{\ltbyhyp}{\ltby{\byhyp}}
+\newcommand{\inby}[1]{\symbyrm{#1}{\in}}
+\newcommand{\inbyref}[1]{\inby{\parref{#1}}}
+\newcommand{\sseteqby}[1]{\symbyrm{#1}{\subseteq}}
+\newcommand{\sseteqbydef}{\sseteqby{\bydef}}
+\newcommand{\sseteqbyref}[1]{\sseteqby{\parref{#1}}}
+\newcommand{\sseteqbyhyp}{\sseteqby{\byhyp}}
+\newcommand{\sseteqbynot}{\sseteqby{\bynot}}
+
+\newcommand{\mc}{,\:}
+\newcommand{\mcbs}{\mc\;\;}
+\newcommand{\mcss}{\mc\;}
+
+\newcommand{\lp}{\left(}
+\newcommand{\lb}{\left[}
+\newcommand{\lc}{\left\{}
+\newcommand{\rp}{\right)}
+\newcommand{\rb}{\right]}
+\newcommand{\rc}{\right\}}
+\newcommand{\la}{\left\langle}
+\newcommand{\ra}{\right\rangle}
+
+\newcommand\lnref[1]{line \lnref*{#1}}
+\WithSuffix
+\newcommand\lnref*[1]{\#\ref{#1}}
+\newcommand\lnrefs[2]{lines \lnrefs*{#1}{#2}}
+\WithSuffix
+\newcommand\lnrefs*[2]{\lnref*{#1}\~\lnref*{#2}}
+
+\newcommand{\factref}[1]{fact \ref{#1}}
+\newcommand{\Factref}[1]{Fact \ref{#1}}
+
+\newcommand\Nat{\mathbb{N}}
+\WithSuffix
+\newcommand\Nat*{\mathbb{N}^*}
+
+\newcommand\Int{\mathbb{Z}}
+\WithSuffix
+\newcommand\Int*{\mathbb{Z}^*}
+
+\newcommand\Real{\mathbb{R}}
+\WithSuffix
+\newcommand\Real*{\mathbb{R}^*}
+
+\renewcommand{\contentsname}{Table of Contents}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\title{The \Hashtrie\ of Knuth \& Liang\\---\,Addendum\,---}
+\author{\larger\vargyas\medskip\\ \tt\textbf{stvar@yahoo.com}}
+\date{Nov 28, 2015}
+
+% http://tex.stackexchange.com/questions/236781/align-the-footnote-markers-to-the-right-in-footnotes/236802#236802
+\makeatletter
+\patchcmd{\@makefntext}
+	{\@makefnmark\hss}
+	{\hss\@makefnmark\hspace{4pt}}
+	{}{}
+\makeatletter
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+
+The purpose of the following sections is to provide mathematical proofs for
+the claims made at the end of section 2.3, \emph{The implementation of
+\code{HashTrie<>} Class Template}, on page 21 of the technical report
+\emph{The \Hashtrie\ of Knuth \& Liang: A C\plusplus11 Implementation},
+\textbf{hash-trie-impl.pdf}:
+
+\begin{quoting}
+The replacement of expression ``\code{h + tolerance - mod\_x}''  with the
+expression ``\code{add(h, tolerance2) - mod\_x}'' had to be done, because,
+as it is easily provable, under cetain conditions, the subexpression
+``\code{h + tolerance}'' is exceeding the upper bound \code{trie\_size}
+of the boxed integer \code{pointer\_t}. It is worthy of notice the readily
+provable fact that both assignments to \code{last\_h} on lines
+\ref{cpp-last-h-assign-1} and \ref{cpp-last-h-assign-2} are correct:
+each of the expression on the right side of these assignments do not
+exceed upon evaluation the bounds of \code{pointer\_t}.
+\end{quoting}
+
+The claim made by the first phrase is restated and proved by
+\factref{add-h-tolerance}; the claim of the second phrase -- by
+\factref{last-h-bounds}.
+Alongside these two facts, the section containing them establishes by proof
+a few more facts which concern the inner workings of the core algorithm
+of class \code{HashTrie<>}.
+
+\section{Mathematical Evaluations}
+
+\begin{defn}[Defining parameters]
+\begin{align}
+& trie\_size \in \Nat,   \label{trie-size}\\
+%
+& max\_letter \in \Nat*. \label{max-letter}\\
+%
+& tolerance \in \Nat.    \label{tolerance}
+\end{align}
+\end{defn}
+
+\begin{defn}[Dependent constants]
+\begin{align}
+mod\_x & \eqbydef trie\_size - 2 \cdot max\_letter, \label{mod-x}\\
+%
+alpha & \eqbydef \ceil{0.61803 \cdot mod\_x},       \label{alpha}\\
+%
+max\_h & \eqbydef mod\_x + max\_letter,             \label{max-h}\\
+%
+max\_x & \eqbydef mod\_x - alpha.                   \label{max-x}
+\end{align}
+\end{defn}
+
+\begin{axioms}[Initiating assertions]
+\begin{align}
+& alpha > 0,          \label{A1}\\
+%
+& tolerance > 0,      \label{A2}\\
+%
+& mod\_x > 0,         \label{A3}\\
+%
+& max\_h > tolerance, \label{A4}\\
+%
+& mod\_x > tolerance, \label{A5}\\
+%
+& mod\_x > alpha.     \label{A6}
+\end{align}
+\end{axioms}
+
+\begin{prop}
+\begin{align}
+& trie\_size \gt 0,                                        \label{trie-size-gt-0}\\
+%
+& max\_h \gt mod\_x,                                       \label{max-h-gt-mod-x}\\
+%
+& \parref{A5} \impl \parref{A4},                           \label{a5-impl-a4}\\
+%
+& tolerance \lt trie\_size,                                \label{tol-lt-trie-size}\\
+%
+& max\_h = trie\_size - max\_letter,                       \label{max-h-2}\\
+%
+& max\_h \lt trie\_size,                                   \label{max-h-lt-trie-size}\\
+%
+& \parref{A4} \iff max\_letter + tolerance \lt trie\_size. \label{a4-tol-max-letter}
+\end{align}
+\end{prop}
+
+\begin{proof}
+For \parref{trie-size-gt-0}: apply \parref{A3} and \parref{mod-x}.
+
+For \parref{max-h-gt-mod-x}: apply \parref{max-h} and \parref{max-letter}.
+
+For \parref{a5-impl-a4}: apply \parref{max-h-gt-mod-x}.
+
+For \parref{tol-lt-trie-size}: $tolerance \ltbyref{A5} mod\_x \eqbyref{mod-x}
+trie\_size - 2 \cdot max\_letter \ltbyref{max-letter} trie\_size$.
+
+For \parref{max-h-2}: apply \parref{max-h} and \parref{mod-x}.
+
+For \parref{max-h-lt-trie-size}: apply \parref{max-h-2} and \parref{max-letter}.
+
+For \parref{a4-tol-max-letter}: $\text{\parref{A4}}
+\iffbyref{max-h-2} trie\_size - max\_letter \gt tolerance
+\iff max\_letter + tolerance \lt trie\_size$.
+\end{proof}
+
+\begin{defn}[The \emph{floor} function]
+\begin{align}
+& \floor{x} \eqbydef \max \mathcal{M}(x) \in \Int\text{, for $x \in \Real$,}
+                                                           \label{floor-def}\\
+\intertext{where}
+& \mathcal{M}(x) \eqbydef \lc k \in \Int \mid k \le x \rc. \label{floor-em}
+\end{align}
+\end{defn}
+
+\begin{prop}[Basic properties of ``$\floor{\cdot}$'']
+\begin{align}
+& \floor{x} \le x\text{, for $x \in \Real$,} \label{floor-le}\\
+%
+& n = \floor{n}\text{, for $n \in \Int$,}    \label{floor-eq}\\
+%
+& \floor{x} \le \floor{y} \iff \mathcal{M}(x) \subseteq \mathcal{M}(y)\text{, for $x, y \in \Real$,}
+                                             \label{floor-em-inc}\\
+%
+& x \le y \impl \floor{x} \le \floor{y}\text{, for $x, y \in \Real$,}
+                                             \label{floor-inc}\\
+%
+& n \le x \iff n \le \floor{x}\text{, for $n \in \Int$ and $x \in \Real$,}
+                                             \label{floor-int}\\
+%
+& n \le x \lt n + 1 \iff \floor{x} = n\text{, for $n \in \Int$ and $x \in \Real$,}
+                                             \label{floor-int-2}\\
+%
+& a \bmod b = a - \floor{a / b} \cdot b\text{, for $a \in \Int$ and $b \in \Nat*$.}
+                                             \label{floor-mod}
+\end{align}
+\end{prop}
+
+\begin{proof}
+For \parref{floor-le}: $x \in \Real \implbyref{floor-def} \floor{x} \in \mathcal{M}(x)
+\implbyref{floor-em} \floor{x} \le x$.
+
+For \parref{floor-eq}: by \parref{floor-le} $\floor{n} \le n;\;
+n \le n \in \Int \implbyref{floor-em} n \in \mathcal{M}(n)
+\impl n \le \max\mathcal{M}(n) \eqbyref{floor-def} \floor{n}$.
+
+For \parref{floor-em-inc}: \qimpl: $k \in \mathcal{M}(x)
+\impl k \le \max \mathcal{M}(x) 
+\eqbyref{floor-def} \floor{x} \lebyhyp \floor{y}
+\inbyref{floor-def} \mathcal{M}(y)
+\implbyref{floor-em} k \in \mathcal{M}(y)$; \qrimpl: $\floor{x}
+\inbyref{floor-def} \mathcal{M}(x) \sseteqbyhyp \mathcal{M}(y)
+\impl \floor{x} \in \mathcal{M}(y)
+\implbyref{floor-def} \floor{x} \le \floor{y}$.
+
+For \parref{floor-inc}: $x \le y
+\implbyref{floor-em} \mathcal{M}(x) \subseteq \mathcal{M}(y)
+\implbyref{floor-em-inc} \floor{x} \le \floor{y}$.
+
+For \parref{floor-int}: \qimpl: $n \le x
+\implbyref{floor-inc} n \eqbyref{floor-eq} \floor{n} \le \floor{x}$;
+\qrimpl: $n \le \floor{x} \inbyref{floor-def} \mathcal{M}(x)
+\implbyref{floor-em} n \le x$.
+
+For \parref{floor-int-2}: $n \le x \iffbyref{floor-int} n \le \floor{x}$;
+$x \lt n + 1 \iffbyref{floor-int} \floor{x} \lt n + 1 \iff \floor{x} \le n$.
+
+For \parref{floor-mod}: firstly remark the uniqueness part of the
+\emph{Euclidean division theorem}: for $x, y \in \Int$, with $y \gt 0$: if
+exists $q' \mc q'' \mc r' \mc r'' \in \Int$ such that $x = q' \cdot y + r'$, 
+$x = q'' \cdot y + r''$, with $0 \le r' \mc r'' \lt y$, then $q' = q''$ and $r' = r''$.
+The proof of this goes easily: suppose $r' \gt r''$. Then $r' - r'' = y \cdot
+(q'' - q')$; follows that $q'' - q' \gt 0$; thus $q'' - q' \ge 1$;
+hence $r' - r'' \ge y$, which contradicts
+$r' - r'' \lt y \rimpl 0 \le r' \mc r'' \lt y$.
+
+Now, this uniqueness property leads to \parref{floor-mod} if
+shown that $0 \le a - b \cdot \floor{a / b} \lt b$. Indeed the relation holds true:
+$n = \floor{a / b} \iffbyref{floor-int-2} n \le a / b \lt n + 1
+\iff b \cdot n \le a \lt b \cdot (n + 1)
+\iff 0 \le a - b \cdot n \lt b$.
+\end{proof}
+
+\begin{prop}
+For $a \mc b \mc x \in \Int$:
+\begin{align}
+& 0 \le a \lt b \impl a \bmod b = a,                       \label{a-mod-b-eq-a}\\
+%
+& 0 \lt b \le a \lt 2 \cdot b \impl a \bmod b = a - b,     \label{a-mod-b-eq-a-minus-b}\\
+%
+& 0 \le x \lt max\_x \impl (x + alpha) \bmod mod\_x = x + alpha,
+                                                           \label{x-alpha-mod-x-lt}\\
+%
+& max\_x \le x \lt mod\_x \impl (x + alpha) \bmod mod\_x = x - max\_x.
+                                                           \label{x-alpha-mod-x-ge}
+\end{align}
+\end{prop}
+
+\begin{proof}
+For \parref{a-mod-b-eq-a}: $0 \le a \lt b \impl 0 \le a/b \lt 1
+\implbyref{floor-int-2} \floor{a/b} = 0 \implbyref{floor-mod} a \bmod b = a$.
+
+For \parref{a-mod-b-eq-a-minus-b}: $0 \lt b \le a \lt 2 \cdot b \impl 1 \le a/b \lt 2
+\implbyref{floor-int-2} \floor{a/b} = 1 \implbyref{floor-mod} a \bmod b = a - b$.
+
+For \parref{x-alpha-mod-x-lt}: $x \lt max\_x \iffbyref{max-x} x + alpha \lt mod\_x$;
+$x \ge 0 \implbyref{A1} x + alpha \gt 0$; then \parref{a-mod-b-eq-a} implies
+\parref{x-alpha-mod-x-lt}.
+
+For \parref{x-alpha-mod-x-ge}: $x \ge max\_x \iffbyref{max-x} x + alpha \ge mod\_x$;
+$alpha \ltbyref{A6} mod\_x\text{ and }x \ltbyhyp mod\_x \impl x + alpha \lt 2 \cdot mod\_x$;
+the latter two consequents along with \parref{A3} conclude to
+$(x + alpha) \bmod mod\_x \eqbyref{a-mod-b-eq-a-minus-b} x + alpha - mod\_x
+\eqbyref{max-x} x - max\_x$. 
+\end{proof}
+
+\begin{notn}
+For $h \in \Nat*$ let $h' \eqbydef h + tolerance \in \Nat*$ and
+$h'' \eqbydef h' - mod\_x \in \Int$.
+\end{notn}
+
+\begin{prop}
+\begin{align}
+& h \le max\_h - tolerance \iff h' \le max\_h,          \label{h-le-max-h-minus-tol}\\
+%
+& h \ge max\_letter + 1 \impl h' \gt max\_letter + 1,   \label{h-max-letter-plus-1}\\
+%
+& h \le max\_h \iff h'' \le max\_letter + tolerance,    \label{h-plus-tol-minus-mod-x-le}\\
+%
+& h \gt max\_h - tolerance \iff h'' \gt max\_letter,    \label{h-plus-tol-minus-mod-x-gt}\\
+%
+& max\_h - tolerance \lt h \le max\_h \iff 
+max\_letter \lt h'' \le max\_letter + tolerance,        \label{h-plus-tol-minus-mod-x}\\
+%
+& max\_letter + tolerance \le max\_h,                   \label{max-letter-plus-tol-lt-max-h}\\
+%
+& max\_letter \lt h \le max\_h \iff 0 \le max\_h - h \lt mod\_x,
+                                                        \label{max-h-minus-h}\\
+%
+& max\_h + tolerance \gt trie\_size \iff tolerance \gt max\_letter.
+                                                        \label{max-h-plus-tol}
+\end{align}
+\end{prop}
+
+\begin{proof}
+For \parref{h-le-max-h-minus-tol}: $h \le max\_h - tolerance
+\iff h' = h + tolerance \le max\_h$.
+
+For \parref{h-max-letter-plus-1}: $h' = h + tolerance
+\gebyhyp max\_letter + 1 + tolerance
+\gtbyref{A2} max\_letter + 1$.
+
+For \parref{h-plus-tol-minus-mod-x-le}: $h \le max\_h
+\iff h'' = h + tolerance - mod\_x \le max\_h - mod\_x + tolerance
+\eqbyref{max-h} max\_letter + tolerance$.
+
+For \parref{h-plus-tol-minus-mod-x-gt}: $h \gt max\_h - tolerance
+\iff h'' = h + tolerance - mod\_x \gt max\_h - mod\_x
+\eqbyref{max-h} max\_letter$.
+
+For \parref{h-plus-tol-minus-mod-x}: apply \parref{h-plus-tol-minus-mod-x-le}
+and \parref{h-plus-tol-minus-mod-x-gt}.
+
+For \parref{max-letter-plus-tol-lt-max-h}: $max\_letter + tolerance
+\lebyref{A5} max\_letter + mod\_x
+\eqbyref{max-h} max\_h$. 
+
+For \parref{max-h-minus-h}: $max\_letter \lt h \le max\_h
+\iff 0 \le max\_h - h \lt max\_h - max\_letter
+\eqbyref{max-h} mod\_x$.
+
+For \parref{max-h-plus-tol}: $max\_h + tolerance \gt trie\_size
+\iff tolerance \gt trie\_size - max\_h
+\eqbyref{max-h-2} max\_letter$. 
+\end{proof}
+
+\begin{prop}
+\begin{align}
+& max\_letter + 1 \le h \le max\_h - tolerance \impl max\_letter + 1 \le h' \le max\_h,
+                                                             \label{hi-bounds}\\
+%
+& max\_h - tolerance \lt h \le max\_h \impl max\_letter + 1 \le h'' \le max\_h.
+                                                             \label{hii-bounds}
+\end{align}
+\end{prop}
+
+\begin{proof}
+For \parref{hi-bounds}: by \parref{h-max-letter-plus-1} $h' \gt max\_letter + 1$,
+therefore $h' \ge max\_letter + 1$. By \parref{h-le-max-h-minus-tol} $h' \le max\_h$.
+
+For \parref{hii-bounds}: by \parref{h-plus-tol-minus-mod-x-gt} $h'' \gt max\_letter$,
+therefore $h'' \ge max\_letter + 1$. By \parref{h-plus-tol-minus-mod-x-le} and
+\parref{max-letter-plus-tol-lt-max-h} $h'' \le max\_h$.
+\end{proof}
+
+\section{Applications to \HashTrie}
+
+\begin{fact}
+The definitions
+\parref{trie-size},
+\parref{max-letter} and
+\parref{tolerance}
+correspond to lines
+\lnref*{cpp-trie-size},
+\lnref*{cpp-max-letter} and
+\lnref*{cpp-tolerance}
+respectively of the \cplusplus\ implementation.
+\end{fact}
+
+\begin{fact}
+The definitions
+\parref{mod-x},
+\parref{alpha},
+\parref{max-h} and
+\parref{max-x}
+correspond to lines
+\lnref*{cpp-mod-x},
+\lnref*{cpp-alpha},
+\lnref*{cpp-max-h} and
+\lnref*{cpp-max-x}
+respectively of the \cplusplus\ implementation.
+\end{fact}
+
+\begin{fact}
+The axioms \parref{A1}\~\parref{A6} correspond one by one to the
+\code{CXX\_ASSERT} \lnrefs{cpp-assert-begin}{cpp-assert-end}.
+\end{fact}
+
+\begin{fact}
+The assignment on \lnref{cpp-tol2-init} is correct.
+\end{fact}
+
+\begin{proof}
+Due to the definition of \code{pointer\_t}, the statement on
+\lnref{cpp-tol2-init} is correct if and only if \code{tolerance} is
+greater or equal than \code{0} and less or equal than \code{trie\_size}
+(these are the limiting bounds of \code{pointer\_t}). From \parref{A2}
+and \parref{tol-lt-trie-size} results that the \lnref{cpp-tol2-init}
+is indeed correct.
+\end{proof}
+
+\begin{fact}\label{x-sequence}
+The variable \code{x} declared, initialized and maintained on lines
+\lnref*{cpp-x},
+\lnref*{cpp-x-init} and respectively
+\lnrefs*{cpp-x-begin}{cpp-x-end} is
+iterating correctly the elements of the sequence $\lp x_n\rp_{n \in \Nat}$,
+where $x_n \eqbydef (alpha \cdot n) \bmod mod\_x\text{ for }n \in \Nat$.
+\end{fact}
+
+\begin{proof}
+Proceed by induction on $n \in \Nat$. For $n = 0$ the statement made above
+holds, since the \lnref{cpp-x-init} is showing that the initial
+value of \code{x} is \code{0}. Now suppose that prior to executing
+\lnref{cpp-x-begin} \code{x} has the value of $x_n$ for some $n \in \Nat$.
+In view of the relations \parref{x-alpha-mod-x-lt} and \parref{x-alpha-mod-x-ge},
+upon the execution of \lnrefs{cpp-x-begin}{cpp-x-end}, \code{x} becomes
+\code{(x + alpha) \emph{mod} mod\_x}. Taking into account that, by the
+definition of sequence $\lp x_n\rp_{n \in \Nat}$,
+$x_{n+1} = (x_n + alpha) \bmod mod\_x$, indeed \code{x} is $x_{n+1}$ after
+the \lnref{cpp-x-end}.
+\end{proof}
+
+\begin{fact}\label{post-h-assign-assert}
+The assertion stated within the comment on \lnref{cpp-post-h-assign-assert}
+is correct.
+\end{fact}
+
+\begin{proof}
+Need to prove that upon executing \lnref{cpp-post-h-assign-assert},
+$max\_letter \lt h \le trie\_size - max\_letter \eqbyref{max-h-2} max\_h$:
+$\text{\Factref{x-sequence}}
+\impl 0 \le x \lt mod\_x \eqbyref{max-h} max\_h - max\_letter
+\iff -1 \lt x \le max\_h - max\_letter - 1
+\iff max\_letter \lt h
+\eqby{\lnref*{cpp-post-h-assign-assert}} x + max\_letter + 1 \le max\_h$.
+\end{proof}
+
+\begin{fact}\label{add-h-tolerance}
+Under certain conditions, the result of evaluating the expression
+\code{add(h, tolerance2)} on \lnref{cpp-last-h-assign-1} exceeds the value of
+\code{trie\_size} for some \code{h}.
+\end{fact}
+
+\begin{proof}
+By \factref{post-h-assign-assert}: $max\_letter \lt h \le max\_h$. If
+let $h \eqbydef max\_h$, then, under the condition that $tolerance \gt max\_letter$,
+\parref{max-h-plus-tol} shows that $h + tolerance \gt trie\_size$ indeed.
+\end{proof}
+
+\begin{rem}
+The fact above indicates that the expression \code{h + tolerance} wouldn't have
+been a proper choice of coding the \lnref{cpp-last-h-assign-1}: in the case of
+$h + tolerance \gt trie\_size$, the evaluation of the expression
+\code{h + tolerance} would have caused the program to halt abruptly (assuming
+that the configuration parameter \code{CONFIG\_HASH\_TRIE\_STRICT\_TYPES} was
+\code{\#define}d at compile-time).
+\end{rem}
+
+\begin{fact}\label{last-h-bounds}
+The assignments to variable \code{last\_h} on lines \lnref*{cpp-last-h-assign-1} and
+\lnref*{cpp-last-h-assign-2} are both correct. Upon the execution of either of them,
+$max\_letter + 1 \le last\_h \le max\_h$.
+\end{fact}
+
+\begin{proof}
+The statements on lines \lnref*{cpp-last-h-assign-1} and \lnref*{cpp-last-h-assign-2}
+are correct if and only if each of the expression on the right side of the
+respective assignments evaluates to an integer not exceeding the bounds of
+type \code{pointer\_t}.
+By the \factref{post-h-assign-assert}, before executing each of the two lines:
+$max\_letter \lt h \le max\_h$.
+Now, for the case of \lnref{cpp-last-h-assign-1} apply \parref{hii-bounds}
+(from \lnref{cpp-h-gt-max-h-minus-tol}: $h \gt max\_h - tolerance$) and,
+respectively, for the case of \lnref{cpp-last-h-assign-2} apply \parref{hi-bounds}
+(from \lnref{cpp-h-gt-max-h-minus-tol}: $h \le max\_h - tolerance$).
+Both give that $max\_letter + 1 \le last\_h \le max\_h$.
+Consequently, the bounds of \code{pointer\_t} are respected: by
+\parref{max-letter} and \parref{max-h-lt-trie-size}, the previous
+double inequality yields: $0 \lt last\_h \lt trie\_size$.
+\end{proof}
+
+\begin{fact}
+The inner loops of method \code{HashTrie<>::find} (not displayed by the listing
+below) that are based on \code{h} computed by \lnrefs{cpp-next-h-begin}{cpp-next-h-end}
+are finite.
+\end{fact}
+
+\begin{proof}
+By the \factref{post-h-assign-assert}, each of these loops start iterating
+with an \code{h} satisfying $max\_letter + 1 \le h \le max\_h$. The
+\lnrefs{cpp-next-h-begin}{cpp-next-h-end} show that \code{h} is incremented
+circularly within the boundaries $max\_letter + 1$ and $max\_h$.
+By the \factref{last-h-bounds}, $max\_letter + 1 \le last\_h \le max\_h$ on each
+execution of \lnrefs{cpp-next-h-begin}{cpp-next-h-end}, \ie\ \code{last\_h}
+lies between the same boundaries as \code{h}. The implementation code also
+shows (not seen below, though) that \code{last\_h} is an invariant of each of
+these loops. Consequently, \code{h} has to meet \code{last\_h} upon
+a finitely many succesive calls of the lambda function
+\code{compute\_the\_next\_trial\_header\_location}.
+This leads the lambda function to return \code{false} -- thus terminating the
+iterations.
+\end{proof}
+
+\appendix
+\section{\protect\cplusplus\ Implementation Excerpts}
+%
+% $ sha1sum hash-trie.cpp
+% 7ba8b1459f0198c93b78c9e1a96faae7f8512824  hash-trie.cpp
+% $ hash-trie-source --hash-trie --tex -t -r 1994-2010 -r 2012-2018 -r 2021 -r 2023-2206 -r 2209-2225 -r 2227-2231 -r 2233-2235 -r 2237-2242 -r 2254-2272 -l 2019:cpp-trie-size -l 2020:cpp-tolerance -l 2022:cpp-max-letter -l 2208:cpp-x -l 2243:cpp-alpha -l 2244:cpp-mod-x -l 2245:cpp-max-h -l 2246:cpp-max-x -l 2248:cpp-assert-begin -l 2253:cpp-assert-end
+%
+\begin{hashtrielisting}[1983]
+template<
+	typename C = char,
+	template<typename> class T = char_traits_t,
+	typename S = size_traits_t>
+class HashTrie :
+	private T<C>,
+	private S
+{
+public:
+	typedef S size_traits_t;
+	typedef T<C> char_traits_t;@\skipnumbering{2011}@
+private:@\skipnumbering{2019}@
+	using size_traits_t::trie_size;@\label{cpp-trie-size}@
+	using size_traits_t::tolerance;@\label{cpp-tolerance}@@\skipnumbering{2022}@
+	using char_traits_t::max_letter;@\label{cpp-max-letter}@@\skipnumbering{2207}@
+	// x_n = (alpha * n) % mod_x
+	pointer_t x;@\label{cpp-x}@@\skipnumbering{2226}@
+	pointer_t find(const char_t*);@\skipnumbering{2232}@
+	static constexpr size_t make_alpha(size_t trie_size, size_t max_letter)@\skipnumbering{2236}@
+	{ return std::ceil(0.61803 * (trie_size - 2 * max_letter)); }@\skipnumbering{2243}@
+	static constexpr size_t alpha = make_alpha(trie_size, max_letter);@\label{cpp-alpha}@
+	static constexpr size_t mod_x = trie_size - 2 * max_letter;@\label{cpp-mod-x}@
+	static constexpr size_t max_h = mod_x + max_letter;@\label{cpp-max-h}@
+	static constexpr size_t max_x = mod_x - alpha;@\label{cpp-max-x}@
+
+	CXX_ASSERT(alpha > 0);@\label{cpp-assert-begin}@
+	CXX_ASSERT(tolerance > 0);
+	CXX_ASSERT(trie_size > 2 * max_letter);
+	CXX_ASSERT(max_h > tolerance);
+	CXX_ASSERT(mod_x > tolerance);
+	CXX_ASSERT(mod_x > alpha);@\label{cpp-assert-end}@@\skipnumbering{2273}@
+};
+\end{hashtrielisting}
+%
+% $ hash-trie-source --hash-trie-func=HashTrie --tex -t -r 2281-2294 -l 2295:cpp-x-init
+%
+\begin{hashtrielisting}[2275]
+template<
+	typename C,
+	template<typename> class T,
+	typename S>
+HashTrie<C, T, S>::HashTrie()
+{@\skipnumbering{2295}@
+	x = 0;@\label{cpp-x-init}@
+}
+\end{hashtrielisting}
+%
+% $ hash-trie-source --hash-trie-func=find --tex -t -r 2306-2421 -r 2430-2453 -r 2460-2482 -r 2484-2499 -r 2503-2509 -r 2516-2521 -r 2530-2618 -l 2422:cpp-tol2-init -l 2454:cpp-x-begin -l 2457:cpp-x-end -l 2459:cpp-post-h-assign-assert -l 2483:cpp-h-gt-max-h-minus-tol -l 2500:cpp-last-h-assign-1 -l 2510:cpp-last-h-assign-2 -l 2522:cpp-next-h-begin -l 2528:cpp-next-h-end
+%
+\begin{hashtrielisting}[2298]
+template<
+	typename C,
+	template<typename> class T,
+	typename S>
+typename
+	HashTrie<C, T, S>::pointer_t
+	HashTrie<C, T, S>::find(const char_t* str)
+{@\skipnumbering{2422}@
+	const pointer_t tolerance2 = tolerance;@\label{cpp-tol2-init}@
+	// trial header location
+	pointer_t h;
+	// the final one to try
+	pointer_t last_h; //!!!INT int last_h;
+
+	const auto get_set_for_computing_header_locations = [&]() {
+		// 24. Get set for computing header locations@\skipnumbering{2454}@
+		if (x >= max_x)@\label{cpp-x-begin}@
+			x -= max_x;
+		else
+			x += alpha;@\label{cpp-x-end}@
+
+		h = x + max_letter + 1; // now max_letter < h <= trie_size - max_letter@\label{cpp-post-h-assign-assert}@@\skipnumbering{2483}@
+		if (h > max_h - tolerance) {@\label{cpp-h-gt-max-h-minus-tol}@@\skipnumbering{2500}@
+			last_h = add(h, tolerance2) - mod_x;@\label{cpp-last-h-assign-1}@
+		}
+		else {@\skipnumbering{2510}@
+			last_h = h + tolerance;@\label{cpp-last-h-assign-2}@
+		}
+	};
+
+	const auto compute_the_next_trial_header_location = [&]() {
+		// 25. Compute the next trial header location h, or abort find@\skipnumbering{2522}@
+		if (h == last_h)@\label{cpp-next-h-begin}@
+			return false;
+		if (h == max_h)
+			h = max_letter + 1;
+		else
+			h ++;
+		return true;@\label{cpp-next-h-end}@
+	};@\skipnumbering{2619}@
+}
+\end{hashtrielisting}
+%
+\let\thefootnote\relax%
+\footnotetext{%
+\renewcommand{\Hashtrie}{Hash-Trie}%
+Copyright \copyright\ 2016\hspace{1em}\textbf{\vargyas}
+
+This file is part of \HashTrie.
+
+\HashTrie\ is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+\HashTrie\ is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with \HashTrie.  If not, see \url{http://www.gnu.org/licenses/}.}
+%
+\end{document}
+
+

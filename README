@@ -1,0 +1,148 @@
+
+                         The Hash-Trie of Knuth & Liang
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                         Stefan Vargyas, stvar@yahoo.com
+
+                                  Dec 11, 2016
+
+Table of Contents
+-----------------
+
+0. Copyright
+1. The Hash-Trie Program
+2. Building Hash-Trie
+3. Testing Hash-Trie
+4. References
+
+
+0. Copyright
+============
+
+This program is GPL-licensed free software. Its author is Stefan Vargyas. You
+can redistribute it and/or modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+You should have received a copy of the GNU General Public License along with
+this program (look up for the file COPYING in the top directory of the source
+tree). If not, see http://gnu.org/licenses/gpl.html.
+
+
+1. The Hash-Trie Program
+========================
+
+The Hash-Trie program was designed to be an implementation of and a test-bed for
+the interesting hash-trie data structure of Knuth & Liang (refer to Knuth's book
+[1] to chapter 6, section 17, page 157).
+
+Hash-Trie provides an implementation for this data structure in modern C++ --
+that is the new C++11 language.
+
+This program was written in the fall of 2015.
+
+
+2. Building Hash-Trie
+=====================
+
+In the development of 'hash-trie', I used an experimental GCC v4.8.0 (built
+from sources) and GNU make v3.81. If using a non-GNU make, then is very likely
+that the makefile 'Makefile' would need a bit of tweaking.
+
+Note that a prerequisite of building the program is that the version of GCC be 
+at least the above v4.8.0. That is because the program requires a substantial
+amount of C++11 features be implemented by the compiler and by its Standard C++
+Library. Even though did not investigated thoroughly, I know no impediment using
+more recent versions of the tools named above.
+
+Hash-Trie is comprised of a sole source file, 'hash-trie.cpp', which is governed
+by a handful of configuration parameters:
+
+  $ grep -E -how 'CONFIG_[A-Z0-9_]+' hash-trie.cpp|sort -u
+  CONFIG_HASH_TRIE_ARRAY_BOUNDS
+  CONFIG_HASH_TRIE_CHAR_TYPE
+  CONFIG_HASH_TRIE_STATISTICS
+  CONFIG_HASH_TRIE_STRICT_TYPES
+  CONFIG_HASH_TRIE_TOLERANCE
+  CONFIG_HASH_TRIE_TRIE_SIZE
+
+Each of these parameters has its share in the definition of any given concrete
+hash-trie data structure. Descriptions about the meaning of these configuration
+parameters is beyond the scope of this README file.
+
+To build the program, simply issue the following command:
+
+  $ make -C src
+
+Expect to get neither warnings nor errors out of make. If everything went OK,
+make is supposed to have produced two binaries which encompass two different
+'hash-trie' configurations:
+
+  $ ./hash-trie -P
+  TOLERANCE:    1000
+  TRIE_SIZE:    32767
+  CHAR_TYPE:    char
+  STRICT_TYPES: no
+  ARRAY_BOUNDS: no
+  STATISTICS:   no
+
+  $ ./hash-trie-trie-size-55-tolerance-1 -P
+  TOLERANCE:    1
+  TRIE_SIZE:    55
+  CHAR_TYPE:    char
+  STRICT_TYPES: no
+  ARRAY_BOUNDS: no
+  STATISTICS:   no
+
+
+3. Testing Hash-Trie
+====================
+
+After building the program by running make successfully, first thing to do is to
+see the brief help info provided by the program itself:
+
+  $ ./hash-trie --help
+
+The help info is indeed succinct as it's only useful when someone already knows
+to certain extent how to use it. Descriptions about the use-cases and about the
+internals of 'hash-trie' is also beyond the scope of this README file.
+
+Hash-Trie is equipped with a basic test suite. For that look into the directory
+'test' for shell script files of form 'test*.sh'. The main script is 'test.sh':
+it starts the whole regression testing process. Note that these bash scripts
+depend upon a few utility programs common to any GNU/Linux installation. The
+'test' directory contains additionally the source from which the 'test*.sh'
+bash scripts were generated: the file 'test.txt'.
+
+Invoking the shell script 'test/test.sh' produces a series of lines as shown:
+
+  $ cd test
+
+  $ ./test.sh
+  test: NAME RESULT
+  ...
+
+NAME is the name of the test case and RESULT is either 'OK' or 'failed'. The
+expected behaviour would be that of all test cases to succeed. In the case of
+things going the wrong way for a particular test case, more verbose output is
+obtainable when running the corresponding 'test-*.sh' shell script on its own.
+It will produce a diff between expected and actual output of the program.
+
+Note that any user's explicit invocation of these bash test scripts must be
+initiated from within the 'test' directory.
+
+The programs used by the testing scripts 'test/test*.sh' are the following:
+
+  * GNU bash 3.2.51
+  * GNU diffutils 2.8.7 (diff)
+  * GNU sed 4.1.5
+
+
+4. References
+=============
+
+[1] Donald E. Knuth. 1992.
+    Literate Programming. CSLI Lecture Notes Number 27.
+    Stanford University, Center for the Study of Language and Information,
+    Stanford, CA, USA.
+
+

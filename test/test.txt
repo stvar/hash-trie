@@ -1,0 +1,235 @@
+# Copyright (C) 2016  Stefan Vargyas
+# 
+# This file is part of Hash-Trie.
+# 
+# Hash-Trie is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# Hash-Trie is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with Hash-Trie.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# hash trie test suite
+#
+$ . ~/regtest2.sh
+$ alias regtest='regtest2-selftest -f test.txt -B'
+
+# list all available tests:
+$ regtest -N
+prereq
+help
+types
+empty
+default
+trie-size-55-tolerance-1
+
+# run all tests:
+$ regtest -A
+
+--[ prereq ]--------------------------------------------------------------------
+
+$ test -x ./hash-trie
+$ print() { printf '%s\n' "$@"; }
+$ hash-trie-config() { hash-trie -P|sed -r '/^(TOLERANCE|TRIE_SIZE):/!d'; }
+$
+
+--[ help ]----------------------------------------------------------------------
+
+$ ./hash-trie -?
+usage: hash-trie [OPTION]...
+where the options are:
+  -P|--[print-]config  action: print out the config parameters
+  -T|--[print-]types   action: print out the add/sub types table
+  -L|--load-only       action: only load the input into the hash trie
+  -p|--print[-trie]    action: print out all <word, count> pairs from
+                         the hash trie (default)
+  -d|--dump[-trie]     action: dump out the complete hash trie structure
+  -b|--[no-][dump-]backtrace
+                       dump a backtrace of the program on fatal error
+                         or otherwise do not (default not)
+  -c|--[no-][print-]chars
+                       print out characters instead of codes on structure
+                         dumps or otherwise do not (default not)
+  -w|--[no-][print-]words
+                       print out words when dumping out the hash trie
+                         or otherwise do not (default do)
+     --debug=WHAT      print out some debugging information; WHAT can
+                         be one of: probing
+     --no-debug        do not print debugging info at all (default)
+  -q|--[no-]quiet      be quiet or otherwise do not (default not)
+  -v|--version         print version numbers and exit
+  -?|--help            display this help info and exit
+$
+
+--[ types ]---------------------------------------------------------------------
+
+$ ./hash-trie -T
+op	operand	operator	wider	result
+add	char	int	int	int
+add	signed char	int	int	int
+add	unsigned char	int	int	int
+add	short	int	int	int
+add	unsigned short	int	int	int
+add	int	int	long long	long long
+add	unsigned int	unsigned int	unsigned long long	long long
+sub	char	int	int	int
+sub	signed char	int	int	int
+sub	unsigned char	int	int	int
+sub	short	int	int	int
+sub	unsigned short	int	int	int
+sub	int	int	long long	long long
+sub	unsigned int	unsigned int	unsigned long long	long long
+$
+
+--[ empty ]---------------------------------------------------------------------
+
+$ hash-trie() { ./hash-trie "$@"; }
+$ hash-trie-config
+TOLERANCE:    1000
+TRIE_SIZE:    32767
+$ echo|hash-trie
+hash-trie: error:1: hash tries cannot contain empty words
+command failed: echo|hash-trie
+$ echo -n|hash-trie
+$
+
+--[ default ]-------------------------------------------------------------------
+
+$ hash-trie() { ./hash-trie "$@"; }
+$ hash-trie-config
+TOLERANCE:    1000
+TRIE_SIZE:    32767
+$ print a b c be bet ben bent af|hash-trie -Lq --debug=probing
+!!! constants: trie_size=32767 tolerance=1000 alpha=20219 mod_x=32715 max_h=32741 max_x=12496
+!!! probing:27: str="be" c='e' x=20219 last_h=21246 h=20246-20247 [2]
+!!! probing:27: str="bet" c='t' x=7723 last_h=8750 h=7750-7751 [2]
+!!! probing:27: str="bent" c='t' x=27942 last_h=28969 h=27969-27970 [2]
+!!! probing:27: str="af" c='f' x=15446 last_h=16473 h=15473-15474 [2]
+$ print a b c be bet ben bent af|hash-trie -d
+p	link[p]	ch[p]	sibling[p]	count[p]	word
+0	0	header	26	0	
+1	15474	1	0	1	a
+2	20247	2	1	1	b
+3	0	3	2	1	c
+4	0	4	3	0	d
+5	0	5	4	0	e
+6	0	6	5	0	f
+7	0	7	6	0	g
+8	0	8	7	0	h
+9	0	9	8	0	i
+10	0	10	9	0	j
+11	0	11	10	0	k
+12	0	12	11	0	l
+13	0	13	12	0	m
+14	0	14	13	0	n
+15	0	15	14	0	o
+16	0	16	15	0	p
+17	0	17	16	0	q
+18	0	18	17	0	r
+19	0	19	18	0	s
+20	0	20	19	0	t
+21	0	21	20	0	u
+22	0	22	21	0	v
+23	0	23	22	0	w
+24	0	24	23	0	x
+25	0	25	24	0	y
+26	0	26	25	0	z
+...	.	.	.	.	.
+7751	20252	header	7771	0	
+...	.	.	.	.	.
+7765	27970	14	7751	1	ben
+...	.	.	.	.	.
+7771	0	20	7765	1	bet
+...	.	.	.	.	.
+15474	1	header	15480	0	
+...	.	.	.	.	.
+15480	0	6	15474	1	af
+...	.	.	.	.	.
+20247	2	header	20252	0	
+...	.	.	.	.	.
+20252	7751	5	20247	1	be
+...	.	.	.	.	.
+27970	7765	header	27990	0	
+...	.	.	.	.	.
+27990	0	20	27970	1	bent
+...	.	.	.	.	.
+$ print a b c be bet ben bent af|hash-trie -p
+a	1
+b	1
+c	1
+ben	1
+bet	1
+af	1
+be	1
+bent	1
+$
+
+--[ trie-size-55-tolerance-1 ]--------------------------------------------------
+
+$ test -x hash-trie-trie-size-55-tolerance-1
+$ hash-trie() { ./hash-trie-trie-size-55-tolerance-1 "$@"; }
+$ hash-trie-config
+TOLERANCE:    1
+TRIE_SIZE:    55
+$ print a b c bc cd bcd cde|hash-trie -Lq --debug=probing
+!!! constants: trie_size=55 tolerance=1 alpha=2 mod_x=3 max_h=29 max_x=1
+!!! probing:27: str="bc" c='c' x=2 last_h=27 h=29 [1], 27 [1]
+!!! probing:27: str="cd" c='d' x=1 last_h=29 h=28-29 [2]
+!!! probing:27: str="bcd" c='d' x=0 last_h=28 h=27-28 [2]
+!!! probing:27: str="cde" c='e' x=2 last_h=27 h=29 [1], 27 [1] !!!
+$ print a b c bc cd bcd cde|hash-trie -d
+hash-trie: error:7: failed to put 'cde' in trie
+p	link[p]	ch[p]	sibling[p]	count[p]	word
+0	0	header	26	0	
+1	0	1	0	1	a
+2	27	2	1	1	b
+3	29	3	2	1	c
+4	0	4	3	0	d
+5	0	5	4	0	e
+6	0	6	5	0	f
+7	0	7	6	0	g
+8	0	8	7	0	h
+9	0	9	8	0	i
+10	0	10	9	0	j
+11	0	11	10	0	k
+12	0	12	11	0	l
+13	0	13	12	0	m
+14	0	14	13	0	n
+15	0	15	14	0	o
+16	0	16	15	0	p
+17	0	17	16	0	q
+18	0	18	17	0	r
+19	0	19	18	0	s
+20	0	20	19	0	t
+21	0	21	20	0	u
+22	0	22	21	0	v
+23	0	23	22	0	w
+24	0	24	23	0	x
+25	0	25	24	0	y
+26	0	26	25	0	z
+27	2	header	30	0	
+28	30	header	32	0	
+29	3	header	33	0	
+30	28	3	27	1	bc
+...	.	.	.	.	.
+32	0	4	28	1	bcd
+33	0	4	29	1	cd
+...	.	.	.	.	.
+$ print a b c bc cd bcd cde|hash-trie -p
+hash-trie: error:7: failed to put 'cde' in trie
+a	1
+b	1
+c	1
+bc	1
+bcd	1
+cd	1
+$
+
+

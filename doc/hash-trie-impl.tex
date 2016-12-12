@@ -1,0 +1,2347 @@
+% Copyright (C) 2016  Stefan Vargyas
+% 
+% This file is part of Hash-Trie.
+% 
+% Hash-Trie is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+% 
+% Hash-Trie is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with Hash-Trie.  If not, see <http://www.gnu.org/licenses/>.
+
+\documentclass[a4paper,11pt]{article}
+\usepackage[nottoc,numbib]{tocbibind}
+\usepackage[hang]{footmisc}
+\usepackage{cellspace}
+\usepackage{tabularx}
+\usepackage{environ}
+\usepackage{booktabs}
+\usepackage{varioref}
+\usepackage{hyphenat}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{dashrule}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{quoting}
+\usepackage{nameref}
+\usepackage{upquote}
+\usepackage{tocloft}
+\usepackage{amsmath}
+\usepackage{relsize}
+\usepackage{fnbreak}
+\usepackage{suffix}
+\usepackage{ifthen}
+\usepackage{ifpdf}
+\usepackage{calc}
+\usepackage{cite}
+\usepackage{url}
+
+\ifpdf
+\pdfinfo{
+/Title(The Hash-Trie of Knuth & Liang: A C++11 Implementation)
+/Author(Stefan Vargyas, stvar@yahoo.com)
+/Creator(LaTeX)
+}
+\fi
+
+\newcommand{\vargyas}{\c{S}tefan Vargyas}
+
+\renewcommand{\ttdefault}{pcr}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{mathastext}
+
+\addtolength{\textheight}{3.4cm}
+\addtolength{\topmargin}{-2.1cm}
+\addtolength{\textwidth}{2.75cm}
+\addtolength{\evensidemargin}{-2cm}
+\addtolength{\oddsidemargin}{-2cm}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.5\medskipamount}
+
+\renewcommand{\=}{\protect\nobreakdash-\hspace{0pt}}
+\renewcommand{\~}{\protect\nobreakdash--\hspace{0pt}}
+
+\def\UrlFont{\bf}
+
+\newcommand{\gnu}{GNU}
+\newcommand{\gnulinux}{\gnu/Linux}
+\newcommand{\plusplus}{\textbf{\raisebox{1pt}{++}}}
+\newcommand{\cplain}{$C$}
+\newcommand{\cplusplus}{$C\plusplus$}
+\newcommand{\Cplusplus}{$\textbf{C\protect\plusplus}$}
+\newcommand{\pascal}{\code{Pascal}}
+\newcommand{\Hashtrie}{Hash\=\!Trie}
+\newcommand{\HashTrie}{\textbf{\Hashtrie}}
+\WithSuffix
+\newcommand\HashTrie*{Hash\hspace{-.105em}Trie}
+\newcommand{\hashtrie}{{\tt\textbf{hash-trie}}}
+\WithSuffix
+\newcommand\hashtrie*{\emph{hash\=trie}}
+
+\newcommand{\ie}{i.e.}
+\newcommand{\eg}{e.g.}
+\newcommand{\opt}[1]{\nohyphens{\tt{`#1\textquotesingle}}}
+\newcommand{\code}[1]{{\tt{#1}}}
+\WithSuffix
+\newcommand\code*[1]{\mbox{\code{#1}}}
+\newcommand{\prog}[1]{{\tt\textbf{#1}}}
+\newcommand{\module}[1]{\code{#1}}
+\newcommand{\txt}[1]{{\textit{#1.txt}}}
+\newcommand{\pg}[1]{p.~#1}
+\newcommand{\pp}[2]{pp.~#1\~#2}
+\newcommand{\pag}[1]{page~#1}
+\newcommand{\pages}[2]{pages~#1\~#2}
+\newcommand{\lno}[1]{\mbox{$\#$\hspace{1pt}#1}}
+\newcommand{\para}[1]{\mbox{\S\hspace{1pt}#1}}
+\newcommand{\paras}[2]{\mbox{\S\hspace{1pt}#1--#2}}
+\newcommand{\parapag}[3][]{%
+	\ifthenelse{\not\equal{#1}{}}{%
+		\para{#2}, \emph{#1}, on \pag{#3}%
+	}{%
+		\para{#2} on \pag{#3}%
+	}%
+}
+\newcommand{\parapg}[2]{\para{#1}, \pg{#2}}
+\newcommand{\paraspag}[3]{\paras{#1}{#2} on \pag{#3}}
+\newcommand{\paraspages}[4]{\paras{#1}{#2} on \pages{#3}{#4}}
+\newcommand{\paraspp}[4]{\paras{#1}{#2} on \pp{#3}{#4}}
+\newcommand{\shaonenamed}{\code{sha1}\=named}
+\newcommand{\compiletime}{compile\=time}
+\newcommand{\runtime}{run\=time}
+\newcommand{\onetoone}{one\=to\=one}
+
+\newcommand{\bitemlabel}{$\bullet$}
+\newlength\bitemlabelwidth
+\newlength\bitemleftmargin
+\newcommand{\bitemsetparams}[1]{%
+	\setlength\bitemlabelwidth{\labelindent}%
+	\addtolength\bitemlabelwidth{\widthof{#1}}%
+	\setlength\bitemleftmargin{\bitemlabelwidth}%
+	\addtolength\bitemleftmargin{\labelsep}%
+	\addtolength\bitemleftmargin{.5\leftmargin}%
+}
+\bitemsetparams{\bitemlabel}
+\newlist{bitemize}{itemize}{9}
+\setlist[bitemize]{
+	align=left,
+	parsep=.5\parsep,%!!!0pt,
+	partopsep=0pt,
+	topsep=0pt,
+	itemsep=0pt,
+	itemindent=0pt,
+	labelindent=0pt,
+	label=\bitemlabel,
+	labelwidth=\bitemlabelwidth,
+	leftmargin=\bitemleftmargin,
+}
+
+\makeatletter
+\newcommand\ProcessPreInit@stev{%
+	\gdef\lst@frameL@##1{\hdashrule[.5ex][c]{2pt}{1pt}{1pt}}%!!!SHELLVERTLINE
+}
+% stev: hook into listings (see listings.dtx)
+\lst@AddToHook{PreInit}{\ProcessPreInit@stev}
+
+% stev: alter the definition of key 'numbers':
+\lst@Key{showskiplines}f[f]{%
+	\lstKV@SetIf{#1}\lst@ifshowskiplines}
+\let\lst@ifskiplines\iffalse
+\newcommand\skipnumbering[1]{%
+	\setcounter{lstnumber}{\numexpr#1-1\relax}%
+	\let\lst@ifskiplines\iftrue
+	\\\lst@PlaceNumber
+	\let\lst@ifskiplines\iffalse
+	\lst@ifshowskiplines...\fi
+}
+\def\lst@renderskiplinessymbol{{%
+	\relsize{1}%
+	\lst@skiplinessymbol
+	\hspace{-.11em}}%
+}
+\def\lst@numberorsymbol{
+	\lst@ifskiplines
+	\makebox[\widthof{\lst@renderskiplinessymbol}+.11em][l]{%
+		\lst@renderskiplinessymbol}%
+	\else
+	\thelstnumber
+	\fi
+}
+\def\lst@defskiplinessymbol{%
+	\textbf{.\hspace{.11em}.\hspace{.11em}.}}
+\def\lst@skiplinessymbol{}
+\lst@Key{skiplinessymbol}{%
+	\lst@defskiplinessymbol}{%
+	\def\lst@skiplinessymbol{#1}}
+\lst@Key{numbers}{none}{%
+	\let\lst@PlaceNumber\@empty
+	\lstKV@SwitchCases{#1}{%
+		none&\\%
+		left&\def\lst@PlaceNumber{%
+			\llap{%
+				\normalfont
+				\lst@numberstyle{\lst@numberorsymbol}%
+				\kern\lst@numbersep}}\\%
+		right&\def\lst@PlaceNumber{%
+			\rlap{%
+				\normalfont
+				\kern\linewidth \kern\lst@numbersep
+				\lst@numberstyle{\lst@numberorsymbol}}}%
+	}{%
+		\PackageError{Listings}{Numbers #1 unknown}\@ehc
+	}%
+}
+\makeatother
+
+% http://www.bollchen.de/blog/2011/04/good-looking-line-breaks-with-the-listings-package/
+\newcommand{\shellprebreak}{%
+	\raisebox{0ex}[0ex][0ex]{%
+		\ensuremath{\hookleftarrow}}}
+\newcommand{\shellpostbreak}{%
+	\raisebox{0ex}[0ex][0ex]{%
+		\ensuremath{\hookrightarrow}\hspace{2pt}}}
+\newcommand{\srcprebreak}{%
+	\shellprebreak}
+\newcommand{\srcpostbreak}{%
+	\shellpostbreak}
+
+% stev: \shelllinewidth below should be defined such that all
+% shell listings of type '$ hash-trie-test ...' to fit entirely
+% on one line; of particular interest is the one obtained from
+% \shellinputlisting{hash-trie-test-series-code} -- which is
+% the longest one
+\newlength\shelllinewidth
+\setlength\shelllinewidth{1.35\linewidth}
+
+\newcommand{\shellskipamount}{%
+	\baselineskip}
+\newcommand{\shellinnerskipamount}{%
+	2\parskip}
+\newcommand{\shellafterskipamount}{%
+	\parskip}
+\newcommand{\shellafterskip}{%
+	\addvspace{-\shellafterskipamount}}%
+\newcommand{\srcskipamount}{%
+	\shellskipamount}
+\newcommand{\srcafterskipamount}{%
+	\shellafterskipamount}
+\newcommand{\srcafterskip}{%
+	\addvspace{-\srcafterskipamount}}%
+
+\lstdefinestyle{shelllistingstyle}{%
+	numbers=none,
+	%!!! xleftmargin=3em,
+	showstringspaces=false,
+	frame=leftline,framesep=1em,framerule=.05pt,%!!!SHELLVERTLINE .1pt,
+	basicstyle=\smaller\ttfamily\bfseries,
+	breakindent=0pt,breakautoindent=false,
+	breaklines=true,breakatwhitespace=true,
+	abovecaptionskip=0pt,
+	belowcaptionskip=0pt,
+	aboveskip=\shellskipamount,
+	belowskip=\shellskipamount,
+	postbreak=\shellpostbreak,
+}
+\lstdefinestyle{srclistingstyle}{%
+	numbers=left,
+	% stev: note that line numbers in pascal listings must
+	% align perfectly with the dots of shell listings!
+	numbersep=1.3em,
+	numberstyle=\tiny,
+	showstringspaces=false,
+	basicstyle=\smaller\ttfamily,
+	breakindent=0pt,breakautoindent=false,
+	breaklines=true,breakatwhitespace=true,
+	linewidth=\shelllinewidth,lineskip=1.05pt,
+	abovecaptionskip=0pt,
+	belowcaptionskip=0pt,
+	aboveskip=\srcskipamount,
+	belowskip=\srcskipamount,
+	postbreak=\srcpostbreak,
+	prebreak=\srcprebreak,
+	emphstyle=\textbf,
+}
+\newcommand{\helplisting}[1]{%
+	\begin{spacing}{1.05}%
+	\newcommand{\postbreak}{%
+		\raisebox{0ex}[0ex][0ex]{%
+			\ensuremath{\hspace{14em}\hookrightarrow\hspace{2pt}}}}
+	\label{#1}
+	\lstinputlisting[
+		style=shelllistingstyle,
+		postbreak=\postbreak,
+		linewidth=.9\linewidth,
+	]{#1-help.txt}%
+	\end{spacing}%
+}
+\newcommand{\msg}[1]{%
+	\vspace{-\parskip}%
+	\begin{center}%
+	{\tt``}\lstinline[basicstyle=\ttfamily]{#1}{\tt''}
+	\end{center}%
+	\vspace{-\parskip}}
+\newcommand{\msgdot}[1]{%
+	\msg{#1.}}
+\newcommand{\regex}[1]{%
+	\textbf/\lstinline[basicstyle=\ttfamily\bfseries]{#1}\textbf/}
+\lstnewenvironment{shelllisting}{%
+	\lstset{%
+		style=shelllistingstyle,
+		postbreak=\shellpostbreak,
+		prebreak=\shellprebreak,
+		linewidth=\shelllinewidth,
+		lineskip=1.05pt,
+	}%
+}{%
+	\shellafterskip
+}
+\newcommand{\srcinline}[1]{%
+	\lstinline[
+		style=srclistingstyle,
+		basicstyle=\ttfamily,
+		mathescape=true,
+	]{#1}%
+}
+\lstdefinestyle{paslistingstyle}{%
+	style=srclistingstyle,
+	showstringspaces=true,
+	language=pascal,
+	emph={
+		define,
+		return,
+		incr,
+		eoln,
+		eof
+	},
+}
+
+\makeatletter
+\lstnewenvironment{paslisting}[1][]{%
+	\lstset{%
+		#1,
+		firstnumber=auto,
+		style=paslistingstyle,
+		escapechar=@,
+	}%
+    \csname\@lst @SetFirstNumber\endcsname
+}{%
+	\csname\@lst @SaveFirstNumber\endcsname
+	\srcafterskip
+}
+\makeatother
+
+\lstdefinestyle{cpplistingstyle}{%
+	style=srclistingstyle,
+	language=[GNU]C++,
+	tabsize=4,
+	emph={
+		alignas,
+		alignof,
+		auto,
+		decltype,
+		nullptr,
+		constexpr,
+		final,
+		override,
+		static_assert,
+		noexcept,
+		__func__,
+		__FILE__,
+		__LINE__,
+		__VA_ARGS__,
+	},
+}
+\lstnewenvironment{cpplisting}{%
+	\lstset{%
+		style=cpplistingstyle,
+	}%
+}{%
+	\srcafterskip
+}
+\newcommand{\cppinline}[1]{%
+	{\lstinline[
+		style=cpplistingstyle,
+		basicstyle=\ttfamily,
+		postbreak=,
+		prebreak=,
+	]{#1}}%
+}
+
+\lstnewenvironment{hashtrielisting}[1][1]{%
+	\lstset{%
+		literate={!!!INT}{$\ INT\!\!:$}4,
+		style=cpplistingstyle,
+		showskiplines=true,
+		lineskip=-.82pt,
+		firstnumber=#1,
+		escapechar=@,
+	}%
+}{%
+	\srcafterskip
+}
+\newenvironment{shelllistinggroup}{%
+	\bgroup
+	\renewcommand{\shellafterskip}{%
+		\addvspace{-\shellinnerskipamount}}%
+}{%
+	\egroup
+	\vspace{\shellinnerskipamount}%
+	\shellafterskip
+}
+\newcommand{\shellinputlisting}[1]{%
+	\begin{spacing}{1.05}%
+	\lstinputlisting[
+		style=shelllistingstyle,
+		postbreak=\shellpostbreak,
+		prebreak=\shellprebreak,
+		linewidth=\shelllinewidth,
+	]{#1.txt}%
+	\shellafterskip
+	\end{spacing}%
+}
+
+\newlength\tablerowsep
+\setlength\tablerowsep{2pt}
+
+\newlength\tableoutersep
+\setlength\tableoutersep{0pt}
+
+\newlength\tablecellsep
+\setlength\tablecellsep{2.5pt}
+
+\setlength\cellspacetoplimit{\tablecellsep}
+\setlength\cellspacebottomlimit{\tablecellsep}
+
+\setlength\abovetopsep{\tableoutersep}
+\setlength\aboverulesep{\tablerowsep}
+\setlength\belowrulesep{\tablerowsep}
+\setlength\belowbottomsep{\tableoutersep}
+
+\newenvironment{ctabular}[2][\relax]{%
+	\begin{center}%
+	\ifthenelse{\not\equal{#1}{\relax}}{%
+		\label{#1}%
+	}{}%
+	\newcommand{\head}[1]{\textbf{##1}}%
+	\begin{tabular}{#2}%
+}{%
+	\end{tabular}%
+	\end{center}%
+}
+\newenvironment{ctabularx}[4][\relax]{%
+	\center
+	\ifdefined\lnwidth\else
+	\newlength\lnwidth
+	\fi
+	\setlength\lnwidth{#2-2\tabcolsep}%
+	\newcommand{\multi}[2]{%
+		\addlinespace[.5ex]%
+		\multicolumn{##1}{p{\lnwidth}}{##2}%
+	}%
+	\newcommand{\dashrule}{%
+		\multicolumn{#4}{@{}l@{}}{%
+			\makebox[#2]{%
+				\hdashrule[.5ex]{#2}{\lightrulewidth}{1pt}%
+				\hfill%
+			}%
+		}\\%
+	}%
+	\newcommand{\head}[1]{\textbf{##1}}%
+	\ifthenelse{\not\equal{#1}{\relax}}{%
+		\label{#1}%
+	}{}%
+	\tabularx{#2}{#3}%
+}{%
+	\endtabularx
+	\endcenter
+}
+
+\newcolumntype{t}{>{\hsize=.35\hsize}X}
+
+\newcommand{\codeelem}[1]{#1}
+\newcommand{\define}{\code{{\#}define}}%
+\newcommand{\func}{\codeelem{function}}%
+\newcommand{\mainfunc}[1]{\codeelem{the \code{main} function of \code{#1}}}%
+\newcommand{\macro}{\codeelem{preprocessor macro}}%
+\newcommand{\varmacro}{\codeelem{variadic} \macro}%
+\newcommand{\varfunc}{\codeelem{variadic function}}%
+\newcommand{\printffunc}{\codeelem{\code{printf}-like} \varfunc}%
+\newcommand{\printffunctempl}{\printffunc\ \codeelem{template}}%
+\newcommand{\functempl}{\codeelem{function template}}%
+\newcommand{\cexprfunctempl}{\code{constexpr} \functempl}%
+\newcommand{\alias}{\codeelem{type alias}}%
+\newcommand{\enum}{\code{enum}}%
+\newcommand{\class}{\code{class}}%
+\newcommand{\classtempl}{\class\ \codeelem{template}}%
+\newcommand{\struct}{\code{struct}}%
+\newcommand{\structtempl}{\struct\ \codeelem{template}}%
+
+% stev: tabularx needed \NewEnviron from package environ.sty
+% http://tex.stackexchange.com/questions/99612/using-tabularx-in-a-custom-environment-misplaced-noalign/111488#111488
+% Placing any alignment material (including \hline) in the end
+% clause here doesn't work, I think because of the way tabularx
+% scans ahead for the table material. [by Andrew Swann]
+\NewEnviron{ntabular}{%
+	\bgroup
+	\newcommand{\erow}{\\\dashrule}%
+	\newcommand{\desc}[1]{\\\multi{3}{##1}}%
+	\renewcommand{\codeelem}[1]{\emph{##1}}%
+	\renewcommand{\cexprfunctempl}{\cppinline{constexpr} \functempl}%
+	\renewcommand{\enum}{\cppinline{enum}}%
+	\renewcommand{\class}{\cppinline{class}}%
+	\renewcommand{\struct}{\cppinline{struct}}%
+	\begin{ctabularx}{.95\textwidth}{StSlX}{3}%
+	\toprule
+	\head{name \& description} & \head{type}\\
+	\midrule
+	\addlinespace[1ex]%
+	\BODY\\
+	\addlinespace[1ex]%
+	\bottomrule
+	\end{ctabularx}%
+	\egroup
+}
+\NewEnviron{dtabular}{%
+	\bgroup
+	\newcommand{\erow}{\\\dashrule}%
+	\newcommand{\pgparalno}[3]{\pg{##1}, \para{##2}, \lno{##3}}%
+	\newcommand{\pgreflno}[1]{p.~\pageref{##1}, \lno{\ref{##1}}}%
+	\newcommand{\desc}[1]{\\\multi{4}{##1}}%
+	\begin{ctabularx}{.95\textwidth}{StSlSlX}{4}%
+	\toprule
+	\head{name \& description} & \head{\pascal\ source} & \head{\cplusplus\ source}\\
+	\midrule
+	\addlinespace[1ex]%
+	\BODY\\
+	\addlinespace[1ex]%
+	\bottomrule
+	\end{ctabularx}%
+	\egroup
+}
+
+% customize varioref's \vpageref and \vpagerefrange commands:
+\def\reftextfaceafter {the \reftextvario{facing}{next} page}
+\def\reftextfacebefore{the \reftextvario{facing}{preceding} page}
+\def\reftextafter     {the \reftextvario{following}{next} page}
+\def\reftextbefore    {the \reftextvario{preceding}{previous} page}
+\def\reftextcurrent   {\reftextvario{this}{the current} page}
+\def\reftextfaraway#1{page \pageref{#1}}
+\def\reftextpagerange#1#2{pages \pageref{#1}\~\pageref{#2}}
+\def\reftextlabelrange#1#2{\ref{#1} to \ref{#2}}
+
+\def\makepagerefrangetrue{%
+	\let\ifpagerefrange\iftrue}
+\ifdefined\ifpagerefrange\else
+\makepagerefrangetrue
+\fi
+\ifpagerefrange
+\newcommand{\pagerefrange}[2]{%
+	\vpagerefrange{#1}{#2}}
+\else
+\newcommand{\pagerefrange}[2]{}
+\fi
+
+\quotingsetup{
+	%font=smaller,
+	vskip=0pt,
+}
+
+\renewcommand{\contentsname}{Table of Contents}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\newlength\citespace
+\setlength\citespace{.3pt}
+\renewcommand{\citeleft}{\mbox{\textbf{[}\hspace{\citespace}}}
+\renewcommand{\citeright}{\mbox{\hspace{\citespace}\textbf{]}}}
+\renewcommand{\citeform}[1]{\textbf{#1}}
+
+\makeatletter
+\renewcommand\@biblabel[1]{\textbf{[#1]}}%
+\makeatother
+\newenvironment{bbibliography}[1]{%
+	\begin{thebibliography}{\textbf{#1}}%
+	\DeclareUrlCommand\url{\urlstyle{tt}\vspace{\parskip}\\}
+}{%
+	\end{thebibliography}%
+}
+
+% http://tex.stackexchange.com/questions/29261/how-to-suppress-typesetting-of-section-title/29266#29266
+\newcommand{\nosection}[1]{%
+	\refstepcounter{section}%
+	\addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%
+	\markright{#1}%
+}
+
+\title{The \Hashtrie\ of Knuth \& Liang:\\A \cplusplus11 Implementation}
+\author{\larger\vargyas\medskip\\ \tt\textbf{stvar@yahoo.com}}
+\date{Oct 31, 2015}
+
+\setstretch{.9}
+\setlength{\footnotemargin}{1.1em}
+
+% http://tex.stackexchange.com/questions/236781/align-the-footnote-markers-to-the-right-in-footnotes/236802#236802
+\makeatletter
+\patchcmd{\@makefntext}
+	{\@makefnmark\hss}
+	{\hss\@makefnmark\hspace{4pt}}
+	{}{}
+\makeatletter
+
+\begin{document}
+\maketitle
+\tableofcontents
+%
+\section{The \HashTrie\ Program}
+\label{hash-trie-program}
+%
+The \HashTrie\ program's vocation is that of a \cplusplus\ tool for exercising
+the interesting \emph{hash\=trie} data structure of Knuth \cite[\pg{157}]{knuth:literate}
+-- a variant of the so called dynamic packed trie data structure of
+Liang \cite[\pg{32}]{liang:hyphenation}.
+\HashTrie\ shall provide an \emph{implementation} for this data structure in modern
+\cplusplus\ -- that is the new \cplusplus11 language \cite{stroustrup:tc++pl4} --
+and shall encompass the implementation into a framework serving the function of
+\emph{test bed} for various easily definable \emph{configurations} of hash-tries.
+
+For the purpose of having an \emph{implementation} of the \hashtrie*
+data structure which facilitates the ease of definition of different
+\emph{configurations} of the structure, upon a few initial iterations over
+Knuth's material \cite[\pp{151}{167}]{knuth:literate}, I designed
+and implemented a set of ``modules'', of which the leading one -- the
+\code{HashTrie} module --, being parametrized statically by a handful
+of \emph{configuration parameters}, gives the means for the birth of
+as many concrete \hashtrie*\ structures as needed. For the sake
+of simplicity all modules were hosted by a single source file,
+\code{hash-trie.cpp}.
+
+As a result of compiling the sole source file \code{hash-trie.cpp}
+with configuration parameters set according to the needed configuration
+of \hashtrie*, a binary \prog{hash-trie} comes to existence, which will
+further be used by the \emph{test bed} for testing purposes.
+
+One important driving force behind designing the modules of \code{hash-trie.cpp}
+the way they were, was the desire to have a clear-cut separation between the
+major parts of the program:
+%
+\begin{ctabular}[initial-design-modules]{ScSl}
+\toprule%!!!\cmidrule[\heavyrulewidth](r){1-1}\cmidrule[\heavyrulewidth](l){2-2}
+\head{module}       & \head{contents}\\
+\midrule%!!!\cmidrule(r){1-1}\cmidrule(l){2-2}
+\textbf{Sys}        & utilities close to the undelying system libraries\\
+\textbf{Ext}        & extensions of the standard \cplusplus\ library\\
+\textbf{\HashTrie*} & everything belonging to the \hashtrie*\ data
+                      structure\\
+\textbf{Main}       & the \code{main} function of \prog{hash-trie} along with
+                      a few related utilities\\
+\bottomrule%!!!\cmidrule[\heavyrulewidth](r){1-1}\cmidrule[\heavyrulewidth](l){2-2}
+\end{ctabular}
+%
+\section{The \Cplusplus11 Implementation of \HashTrie}
+\label{hash-trie-c++11-impl}
+%
+The first objective -- set forth at the beginning of section
+\ref{hash-trie-program}, \nameref{hash-trie-program} -- is that of providing an
+\cplusplus11 implementation for the \hashtrie*\ data structure of Knuth~\&~Liang.
+This data structure in defined and implemented in chapter 6, \emph{Programming Pearls,
+Continued: Common Words (1986)}, of \cite[\pg{151}]{knuth:literate} as core part
+of a program solving the following problem proposed by Bentley \cite{bentley:pearls}:
+%
+\begin{quoting}
+Given a text file and an integer \emph{k}, print the \emph{k} most common words
+in the file (and the number of their occurrences) in decreasing frequency.
+\end{quoting}
+%
+Knuth states in \parapag[Dictionary Lookup]{17}{157},
+of his work, that the \hashtrie*\ structure is a variant of a data
+structure due to Liang's Ph.D. work -- see section \emph{Dynamic packed tries}
+of chapter \emph{Pattern generation} in \cite[\pg{32}]{liang:hyphenation}.
+%
+\subsection{The \pascal\ Implementation of Knuth}
+\label{knuth-pascal-impl}
+The general structure of Knuth's \pascal\ program\footnote{To be more precise,
+Knuth implemented his solution to Bentley's problem in his own \code{Web} system
+of programming (see chapter 4, \emph{Literate Programming}, of \cite{knuth:literate}
+for a thorough description of this system). \code{Web} boils down the source
+\emph{literate program} given as input to a completely defined \pascal\ source program.}
+is revealed in \parapag{3}{152}:
+%
+\begin{paslisting}
+program common_words(input, output);
+type { Type declarations (17) }
+var { Global variables (4) }
+{ Procedures for initialization (5) }
+{ Procedures for input and output (9) }
+{ Procedures for data manipulation (20) }
+begin
+{ The main program (8) }
+end.
+\end{paslisting}
+%
+Upon looking deeper into the implementation, one can see that,
+the \emph{global variable}s constitute the main mechanism for communication
+between the parts -- \ie\ the \code{procedure}s and the \code{function}s -- of
+the program, or even, within one part of it only. This is to say that the program does
+not encapsulate related data into, \eg, \code{record} structures -- thus, nor
+does he attach specific \code{procedure}s and \code{function}s to such structures --,
+for to have a more clear-cut division between the relevant pieces of functionality
+of the program.
+
+Another trait of this \pascal\ program is that system dependecies -- as these
+are implied by the potential necessity of running the program on several different
+supporting platforms -- are not dealt with at all. This is of course justifiable
+by the fact that the \pascal\ language and it's environment -- at the time of
+Knuth's writing -- had no concern at all with these kind of issues.\footnote{For
+an interesting and detailed yet debatable analysis of \pascal's shortcomings
+look upon the well-known report of Kernighan \cite{kernighan:pascal}. Note that
+the paper appeared before ISO/IEC 7185 -- the \pascal\ standard -- was created
+in 1983.} Nevertheless, Knuth is well aware of the matters of portability and,
+nota bene, he does have his own solutions to such kind of difficulties in the
+case of the complex \textbf{\TeX} system of typesetting he has been built
+\cite[ch.~4, sec.~\emph{Portability}, \pp{122}{124}]{knuth:literate}.
+
+The third trait of this \pascal\ program is concerning the issue of handling and
+reporting the error conditions of at least two kinds: logic errors and \runtime\
+errors. (Simply put, the category of logic errors refers to those errors which
+are due to programming mistakes within the internal logic of the program; the
+category of \runtime\ errors encompasses the kind of fault conditions due to
+the outer world of the program -- these are either conditions originating
+from the supporting environment or from the user mishandling the program.)
+With respect to the category of logic errors, the program relies completely on
+\pascal's type system: there are no supplemental checks of this kind made
+in the code.
+%
+%\pag{101}:
+%\begin{quoting}
+%[...] Furthermore \code{WEB} itself has a macro-processing ability that
+% makes \Pascal's limitations largely irrelevant.
+%\end{quoting}
+%
+%\pag{121}
+%\begin{quoting}
+%[...] This feature of \code{WEB} was introduced specifically to overcome
+%\pascal's unfortunate inability to do compile-time arithmetic.
+%\end{quoting}
+%
+%\parapag{6}{153}
+%\begin{quoting}
+%\textbf{6.} The \code{WEB} system, which may be thought of as a preprocessor
+%for \Pascal, includes a macro definition facility so that portable programs
+%are easier to write. 
+%\end{quoting}
+%
+
+On the other hand, concerning the \runtime\ errors, the code handles
+very scarcely the errors which are due to the user misusing the program.
+For example, look at the code implementing the function \code{read\_int}
+in \parapag{9}{154}: there is an insufficient wary about the user providing
+an invalid numerical input, and there is none with regards to an otherwise
+valid numerical input that could overflow the capacity of the internal
+\code{integer} type involved: 
+%
+\begin{paslisting}
+{ 9. Basic input routines. [...] a function
+  that reads an optional positive integer,
+  returning zero if none is present at the
+  beginning of the current line. }
+function read_int: integer;
+var n: integer; { the accumulated value }
+begin
+  n := 0;
+  if not eof then
+  begin
+    while (not eoln) and (input^ = ' ') do
+      get(input);
+    while (input^ >= '0') and (input^ <= '9') do
+    begin
+      n := 10 * n + ord(input^) - ord('0');
+      get(input);
+    end;
+  end;
+  read_int := n;
+end;
+\end{paslisting}
+%
+In this context, it is to be noted the interesting remark Knuth made\footnote{%
+Knuth's remark echoes Kernighan's own accounts about \pascal's environment, and,
+particularly, about \pascal's \code{I/O} subsystem. (see section 4 of Kernighan's
+report.)} at the beginning of the section which includes the code above
+(\parapg{9}{154}):
+%
+\begin{quoting}
+It will be nice to get the messy details of \pascal\ input out of the way
+and off our minds.
+\end{quoting}
+%
+The other input procedure of the program is \code{get\_word} (see it
+below, on \vpageref{get-word-func}). Similarly to the function \code{read\_int}
+above, the code of \code{get\_word} pays little concern to the \runtime\ errors
+that might occur due to the faulty input given.
+
+Having in mind the remarks made above, for refining farther the first of the
+two main objectives stated in section \ref{hash-trie-program}, I choose for
+the \cplusplus11 implementation of \hashtrie*\ to be closely attached
+to Knuth's own \pascal\ implementation, but \emph{no closer}.
+
+The point here is that my intention is not to make a \onetoone\ translation of
+\pascal\ code to \cplusplus, but a translation that is made up of choices resulted
+upon careful deliberation of which \pascal\ construct is transformed to what
+\cplusplus\ equivalent construct. An illustrating example might be the following:
+the implementation in \parapag{13}{156} defines several things as shown by
+the code below:
+%
+\begin{paslisting}
+define max_word_length = 60 { words shouldn't be longer than this }
+buffer: array [1..max_word_length] of 1..26; { the current word }
+word_length: 0..max_word_length;
+       { the number of active letters currently in buffer }
+word_truncated: boolean;
+       { was some word longer than max_word_length? }
+\end{paslisting}
+%
+% % stev: the alignment of line numbers in pascal listings
+% % must match precisely that of the dots in shell listings
+% \begin{shelllisting}
+% $ foo
+% bar
+% $
+% \end{shelllisting}
+%
+where the nearly surrounding context is as follows:
+%
+\begin{quoting}
+\textbf{13.}
+Each new word found in the input will be placed into a \code{buffer} array.
+We shall assume that no words are more than 60 letters long; if a longer word
+appear, it will be truncated to 60 characters, and a warning message will be
+printed at the end of the run.
+\end{quoting}
+%
+From my perspective, it is obvious that the \cplusplus\ implementation shouldn't
+impose such an uptight limitation on the length of the input words. On the
+other hand, yet more importantly, is that the implementation shoudn't define
+\code{buffer} to be of type \code{char[max\_word\_length+1]}, but to be 
+\code{char*} -- \ie\ a null\=terminated string -- and/or \code{std::string}.
+Such an option of transformation from \pascal\ to \cplusplus\ would render
+\code{max\_word\_length},
+\code{word\_length} and
+\code{word\_truncated}
+as useless and, consequently, they will not be translated into the implementing
+\cplusplus\ code.
+Moreover, deriving from this choice of translation, the \code{I/O} \pascal\ code
+of \paraspages{15}{16}{156}{157} which is listed below:
+%
+\begin{paslisting}[label=get-word-func]
+{ 15. We're now ready for the main input routine,
+  which puts the next word into the buffer. If no more
+  words remain, word_length is set to zero; otherwise
+  word_length is set to the length of the new word. }
+procedure get_word;
+label exit; { enable a quick return }
+begin
+  word_length := 0;
+  if not eof then
+  begin
+    while lettercode[ord(input^)] = 0 do
+      if not eoln then
+        get(input)
+      else
+      begin
+         read_ln;
+         if eof then return;
+      end;
+    { Read a word into buffer (16) }
+    { 16. At this point lettercode[ord(input^)] > 0,
+      hence input^ containts the first letter of a word. }
+    repeat
+      if word_length = max_word_length then
+        word_truncated := true
+      else
+      begin
+        incr(word_length);
+        buffer[word_length] := lettercode[ord(input^)];
+      end;
+      get(input);
+    until lettercode[ord(input^)] = 0;
+  end;
+exit:
+end;
+\end{paslisting}
+%
+will be translated to something simply like the \cplusplus\=styled \code{I/O}
+statements:
+%
+\begin{cpplisting}
+std::string  input_word;
+std::istream input_stream = ...;
+std::getline(input_stream, input_word);
+\end{cpplisting}
+%
+The string \code{input\_word} will than be \emph{passed by value} to where is
+needed. Furthermore, is it easily foreseeable that the mapping provided by the
+\code{lettercode} table (\paraspages{11}{12}{155}{156}, see below) should
+be deferred to a \emph{traits} class -- which will become a default template
+parameter of and it will be used by the class template that will encompass the
+core functionality of the \hashtrie*\ data structure.
+
+One more remark concerning the peculiarities of \pascal\ is referring to, in
+Knuth's words, the following things (\paraspag{11}{12}{155}):
+%
+\begin{quoting}
+\textbf{11.} To find words in the \emph{input} file, we want a quick way to
+distinguish letters from nonletters. \pascal\ has conspired to make this problem
+somewhat tricky, because it leaves many details of the character set undefined.
+[...]
+
+If \code{c} is a value of type \code{char} that represents the \code{k}th
+letter of the alphabet, then \code*{lettercode[ord(c)]\,=\,k}; but
+if \code{c} is a nonletter, \code*{lettercode[ord(c)]\,=\,0}. We assume
+\code*{0\,$\le$\,ord(c)\,$\le\,$255} whenever \code{c} is of type \code{char}.
+\end{quoting}
+%
+\vspace{-\partopsep}
+%
+\label{pascal-lettercode-begin}
+\begin{paslisting}[name=lettercode]
+{ Global variables (4) += }
+lowercase, uppercase: array [1..26] of char; { the letters }
+lettercode: array [0..255] of 0..26; { the input conversion table }
+\end{paslisting}
+%
+\vspace{-\partopsep}
+%
+\begin{quoting}
+\textbf{12.} A somewhat tedious set of assignments is necessary for the
+definition of \code{lowercase} and \code{uppercase}, because letters need not
+be consecutive in \pascal's character set.
+\end{quoting}
+%
+\vspace{-\partopsep}
+%
+\begin{paslisting}[name=lettercode]
+{ Set initial values (12) }
+lowercase[1] := 'a'; uppercase[1] := 'A';
+...
+lowercase[26] := 'z'; uppercase[26] := 'Z';
+for i := 0 to 255 do
+  lettercode[i] := 0;
+for i := 1 to 26 do
+begin
+  lettercode[ord(lowercase[i])] := i;
+  lettercode[ord(uppercase[i])] := i;
+end;
+\end{paslisting}
+\label{pascal-lettercode-end}
+%
+Indeed, \code{lowercase} and \code{uppercase} are not necessary in the
+environment of \cplusplus: the implementation will simply use either
+\code{tolower} or \code{towlower} functions. Similarly to the case of
+\code{lettercode}, the mapping provided by \code{lowercase} will be deferred
+to the traits class associated to the \hashtrie*\ structure.
+
+For the category of \onetoone\ translations from \pascal\ to \cplusplus,
+hereafter will follow a couple of examples of places where the \pascal\
+implementation matches quite well the translated \cplusplus\ side. As a matter
+of fact these places are part of the core algorithms and inner data structures
+of \hashtrie*\ -- for which I decided that the \cplusplus\ side be as
+close as possible to the \pascal\ side as it was laid down by Knuth.
+
+\pascal's type system is known
+to be of a \emph{strong} kind. Unfortunately, at times this type system seems
+to be \emph{too strong}: \eg\ the size of an array or string is part of its type,
+thus making certain programming tasks quite difficult.\footnote{Subsection 2.1
+of \cite{kernighan:pascal} accounts for this problem out of the experience
+the author had rewriting a weighty set of programs in \pascal.}
+Above was shown that, for certain cases, \code{array}'s
+of fixed size in \pascal\ where not translated \onetoone\ to \cplusplus, but
+an adaptation has been made such that the translation to suite the target style
+of programming and the surrounding environment.
+
+However, this is not to be generalized completely, because, for a couple of
+inner structures of \hashtrie*\ -- indeed, \code{array}'s of fixed size --, the
+\cplusplus\ implementation will keep its declarations tightly parallel with the
+originating \pascal\ ones. These declarations are indicated below, extracted
+from \parapag[Dictionary Lookup]{17}{158}:
+%
+\label{pascal-types-begin}
+\begin{paslisting}[name=pascal-types]
+define trie_size = 32767 { the largest pointer value }@\label{pas-types-first-line}@
+pointer = 0..trie_size;
+\end{paslisting}
+%
+from \parapag{18}{159}:
+%
+\begin{paslisting}[name=pascal-types]
+define empty_slot = 0
+define header = 27
+link, sibling: array [pointer] of pointer;
+ch: array [pointer] of empty_slot..header;
+\end{paslisting}
+%
+from \parapag{24}{160}:
+%
+\begin{paslisting}[name=pascal-types]
+define tolerance = 1000
+\end{paslisting}
+%
+and from \parapag[The frequency counts]{32}{162}:
+%
+\begin{paslisting}[name=pascal-types]
+define max_count = 32767 { count's won't go higher then this }
+count: array [pointer] of 0..max_count;@\label{pas-types-last-line}@
+\end{paslisting}
+\label{pascal-types-end}
+%
+Two of the \code{define}s above -- \code{trie\_size} and \code{tolerance} --
+will become part of the \emph{configuration parameters} of \hashtrie*'s generic
+structure: out of specification of each of them, concrete \hashtrie*s will
+be obtained.
+
+The next two sections to come will introduce a few more of these configuration
+parameters. Anticipating a bit, but in direct relation with the \pascal\ context
+of this section, one should observe the necessity of at least two more
+parameters -- let's name them \code{ARRAY\_BOUNDS} and \code{STRICT\_TYPES}.
+
+These parameters associate with two \pascal\ matters which have to be dealt with:
+arrays indexing and arithmetical expressions. The \pascal\ \runtime\ support
+ensures that arrays indexing are within the bounds defined for the type involved
+and that arithmetical expressions on \code{integer}s do no exceed the limits of
+the respective types. The \cplusplus\ code should be flexible enough implementing
+transparently these kinds of \runtime\ checks, yet, it should be able to let these
+supplemental checks out of a particular build of \hashtrie*\ when efficiency is
+of paramount importance.
+%
+\subsection{The Structure of \code{hash-trie.cpp} Source File}
+\label{struct-hast-trie-source}
+%
+The \cplusplus\ source file of \HashTrie\ was structured according to the initial
+design (see the table on \vpageref{initial-design-modules}). Each of the ``modules''
+\module{Sys}, \module{Ext} and \module{HashTrie} were encompassed within a namespace
+with the same name. However, the handful members of \module{Main} module were
+defined at the global scope:
+%
+\begin{ntabular}
+%
+\code{program} and \code{verdate}
+                          & \cppinline{const char[]}
+\desc{The sole global constants of the program. Define the name and
+the version number and date of the program. The constant \code{program}
+is defined by the build parameter \code{PROGRAM} -- which is controlled
+by \prog{make}.}
+\erow
+
+\code{global\_options\_t} & \struct
+\desc{Encapsulate all global option variables in one structure.}
+\erow
+
+\code{globals}            & \code{global\_options\_t}
+\desc{The sole global variable. Give access to the global options.}
+\erow
+
+\code{options\_t}         & \class
+\desc{Parse command line options, update \code{globals} and
+provide the action option. These things are obtained upon invoking
+the sole publicly defined method of the class:
+\centerline{\mbox{\cppinline{static const options_t options(int argc, char* argv[])}.}}}
+\erow
+
+\code{print\_config}      & \func
+\desc{Print out the configuration parameters of the program.}
+\erow
+
+\code{print\_op\_types<>} & \functempl
+\desc{Print out the types corresponding to the named operation.}
+\erow
+
+\code{print\_types}       & \func
+\desc{Print out the types of \emph{add} and \emph{sub} operations by
+calling \code{print\_op\_types<>}.}
+\erow
+
+\code{hash\_trie\_error}  & \printffunc
+\desc{Print out formatted error messages and, if told to do so, exit
+the program.}
+\erow
+
+\code{hash\_trie\_t}      & \alias
+\desc{\code{HashTrie::HashTrie<Sys::char\_t>}.}
+\erow
+
+\code{print\_func\_t}     & \alias
+\desc{\code{void (hash\_trie\_t::*)(Sys::ostream\&) const}.}
+\erow
+
+\code{exec\_hash\_trie}   & \func
+\desc{Load up words read from \code{stdin} in an instance of
+\code{hash\_trie\_t} and than call on that instance for the named
+print function, if given. When the \code{STATISTICS} configuration
+parameter was enabled at compile-time, if \code{globals.print\_stats}
+says so, then also print out the statistics information of the instance.}
+\erow
+
+\code{main}               & \mainfunc{hash-trie.cpp}
+\desc{Dispatch the action option obtained from function
+\code{options\_t::options} by calling the appropriate
+handler function:
+\code{print\_config},
+\code{print\_types} or
+\code{exec\_hash\_trie}.}
+%
+\end{ntabular}
+%
+The complete definition of \code{main} function is as follows:
+%
+% $ sha1sum hash-trie.cpp
+% 7ba8b1459f0198c93b78c9e1a96faae7f8512824  hash-trie.cpp
+% $ hash-trie-source --main-func --tex -t
+%
+\begin{hashtrielisting}[3406]
+int main(int argc, char* argv[])
+{
+	const auto opt =
+		options_t::options(argc, argv);
+
+	switch (opt.action) {
+	case options_t::print_config:
+		print_config();
+		break;
+	case options_t::print_types:
+		print_types();
+		break;
+	case options_t::load_trie_only:
+		exec_hash_trie();
+		break;
+	case options_t::print_trie:
+		exec_hash_trie(
+			&hash_trie_t::print);
+		break;
+	case options_t::dump_trie:
+		exec_hash_trie(
+			&hash_trie_t::dump);
+		break;
+	default:
+		SYS_UNEXPECT_ERR(
+			"action='%zu'",
+			Ext::size_cast(opt.action));
+	}
+
+	return 0;
+}
+\end{hashtrielisting}
+%
+The action options relating to \code{hash\_trie\_t} are dispatched 
+to the function \code{exec\_hash\_trie}:
+%
+% $ hash-trie-source --exec-hash-trie --tex -t
+%
+\begin{hashtrielisting}[3371]
+using hash_trie_t = HashTrie::HashTrie<Sys::char_t>;
+
+using print_func_t = void (hash_trie_t::*)(Sys::ostream&) const;
+
+void exec_hash_trie(print_func_t print_func = nullptr)
+{
+	size_t lno = 1;
+	hash_trie_t trie;
+	hash_trie_t::string_t str;
+	while (Ext::getline(Sys::cin, str)) {
+		try {
+			if (!trie.put(str) && !globals.quiet)
+				hash_trie_error(
+					false, lno,
+					"failed to put '%"
+					SYS_CHAR_TYPE_FMTS
+					"s' in trie",
+					str.c_str());
+		}
+		catch (const HashTrie::Error& err) {
+			hash_trie_error(
+				true, lno, "%s", err.what());
+		}
+		lno ++;
+	}
+
+	if (print_func)
+		(trie.*print_func)(Sys::cout);
+
+#ifdef CONFIG_HASH_TRIE_STATISTICS
+	if (globals.print_stats)
+		trie.print_stats(Sys::cout);
+#endif
+}
+\end{hashtrielisting}
+%
+The namespace \code{Sys} contains system-related declarations and definitions:
+%
+\begin{ntabular}
+%
+\code{SYS\_CHAR\_TYPE\_NAME} & \define
+\desc{Specify the type used for character representation throughout the program.
+Depending on the value of \code{CONFIG\_HASH\_TRIE\_CHAR\_TYPE} being
+\code{0} or \code{1}, is either \code{char} or \code{wchar\_t}.}
+\erow
+
+\code{SYS\_CHAR\_TYPE\_FMTS} & \define
+\desc{Specify the length modifier of a \code{`\%s'} format specifier.
+Depending on the value of \code{CONFIG\_HASH\_TRIE\_CHAR\_TYPE} being
+\code{0} or \code{1}, is either the empty string or \code{"l"}.}
+\erow
+
+\code{Sys::char\_t} & \alias
+\desc{Define the type used for character representation:
+\code{SYS\_CHAR\_TYPE\_NAME}.}
+\erow
+
+\code{Sys::ostream} & \alias
+\desc{Define the I/O streams type used for output:
+\code{std::basic\_ostream<Sys::char\_t>}.}
+\erow
+
+\code{Sys::istream} & \alias
+\desc{Define the I/O streams type used for input:
+\code{std::basic\_istream<Sys::char\_t>}.}
+\erow
+
+\code{Sys::cin} & \code{Sys::istream\&}
+\desc{Define the I/O streams object associated with \code{stdin}.
+Depending on the value of \code{CONFIG\_HASH\_TRIE\_CHAR\_TYPE},
+it refers to \code{std::cin} or to \code{std::wcin}.}
+\erow
+
+\code{Sys::cout} & \code{Sys::ostream\&}
+\desc{Define the I/O streams object associated with \code{stdout}.
+Depending on the value of \code{CONFIG\_HASH\_TRIE\_CHAR\_TYPE},
+it refers to \code{std::cout} or to \code{std::wcout}.}
+\erow
+
+\code{Sys::cerr} & \code{Sys::ostream\&}
+\desc{Define the I/O streams object associated with \code{stderr}.
+Depending on the value of \code{CONFIG\_HASH\_TRIE\_CHAR\_TYPE},
+it refers to \code{std::cerr} or to \code{std::wcerr}.}
+\erow
+
+\code{Sys::die} & \printffunc
+\desc{Handle fatal error conditions: print out a formatted
+error message to \code{stderr} and than exit the program.
+If \code{globals.dump\_backtrace} says so, print out
+the backtrace of the program prior to bailing out.}
+\erow
+
+\code{Sys::assert\_failed} & \func
+\desc{Handle an assertion failed error condition: invoke \code{die}
+with a proper argument list.}
+\erow
+
+\code{Sys::unexpect\_error} & \printffunc
+\desc{Handle an unexpected error condition: invoke \code{die}
+with a proper argument list.}
+\erow
+
+\code{SYS\_ASSERT} & \macro
+\desc{Test for the expression provided as argument to be \code{true}:
+if not, raise an assertion failed error by calling in \code{Sys::assert\_failed}.
+Nothing is done when \code{DEBUG} is not defined.}
+\erow
+
+\code{SYS\_UNEXPECT\_ERR} & \varmacro\footnote{%
+Variadic preprocessor macros via \code{\_\_VA\_ARGS\_\_} are by now legal in
+\cplusplus11: ISO/IEC 14882:2011, 16.3 Macro replacement, pts.~4, 5 and 10;
+16.3.1 Argument substitution, pt.~2; 16.3.5 Scope of macro definitions, pt.~9.}
+\desc{Raise an unexpected error by calling in \code{Sys::unexpect\_error}.}
+%
+\end{ntabular}
+%
+\newpage
+% 
+\begin{ntabular}
+%
+\code{Sys::error<>} & \printffunctempl
+\desc{Format an error string and than throw it via an exception object
+of type specified.}
+\erow
+
+\code{Sys::clocks\_t} & \struct
+\desc{Encapsulate three time counters of microsecond resolution:
+\code{real}, \code{user} and \code{sys}. Define convenient
+operators: \code{+}, \code{+=}, \code{-}, \code{-=} and,
+for printing out, \code{<<}.
+Is compiled in only when defining \code{CONFIG\_HASH\_TRIE\_STATISTICS}.}
+\erow
+
+\code{Sys::clock\_t} & \struct
+\desc{For printing it out, restrict to the specified one of the three
+time counters of a \code{clocks\_t} object.
+Is compiled in only when defining \code{CONFIG\_HASH\_TRIE\_STATISTICS}.}
+\erow
+
+\code{Sys::utime\_t} & \class
+\desc{Define a convenient interface to the system API \code{gettimeofday}
+and \code{getrusage} functions for time measurements of microsecond resolution.
+Return a \code{clocks\_t} object.
+Is compiled in only when defining \code{CONFIG\_HASH\_TRIE\_STATISTICS}.}
+%
+\end{ntabular}
+%
+The namespace \code{Ext} contains many useful extensions -- function templates
+and class templates -- to the standard \cplusplus\ library. However, the table
+that follows was shortened for to list only the most important of these
+extensions:
+%
+\begin{ntabular}
+\code{Ext::min<>},
+\code{Ext::max<>} & \cexprfunctempl s
+\desc{Provide handy shortcuts to the corresponding \code{std::numeric\_limits<>}
+functions.}
+\erow
+
+\code{Ext::digits<>} & \cexprfunctempl
+\desc{Provide a handy shortcut to the \code{std::numeric\_limits<>::digits}
+constant.}
+\erow
+
+\code{Ext::size\_cast<>} & \functempl: \code{size\_t(T)}
+\desc{Cast safely an integer of type narrower or equal width than
+\code{size\_t} to \code{size\_t}.}
+\erow
+
+\code{Ext::array<>} & \functempl: \code{Sys::array\_t<T,N>(T(\&)[N])}
+\desc{Access \cplain-style arrays via a range checking \code{operator[]}.}
+\erow
+
+\code{Ext::array\_size<>} & \cexprfunctempl: \code{size\_t(T(\&)[N])}
+\desc{Return the number of elements of \cplain-style arrays.}
+\erow
+
+\code{Ext::getline<>} & \functempl
+\desc{Replace \code{std::getline<>} on \code{std::basic\_string<>} with
+an optimized version.\footnote{New in \cplusplus11 is that \code{std::string} of
+\code{char}-like objects is required to store contiguously its elements
+(see ISO/IEC 14882:2011, 21.4.1 pt.~5).
+A consequence of this is that the growing of a \code{std::basic\_string<>}
+inside \code{Ext::getline<>} can be done efficiently in an I/O buffer-like
+manner.}}
+\erow
+
+\code{Ext::box\_t<>} & \classtempl
+\desc{Provide a wrapper class around integer types for to perform bounds
+checkings on the assignments and overflow and underflow checkings on the
+arithmetic operations involved.}
+\end{ntabular}
+%
+%!!!\newpage
+%
+The namespace \code{HashTrie} contains everything related to the \hashtrie*
+data structure. A short synopsis follows below. The next subsection will
+delve deeply into the implementation code.
+%
+\begin{ntabular}
+\code{HashTrie::Error} & \struct 
+\desc{Define the exception class used for signaling the few run-time error
+conditions that might occur in \code{HashTrie::HashTrie<>} class. It is derived
+from \code{std::runtime\_error}.}
+\erow
+
+\code{HashTrie::types\_t} & \enum
+\desc{Name the four main types used by class \code{HashTrie::HashTrie<>}: 
+\code{count\_type},
+\code{pointer\_type},
+\code{letter\_type} and
+\code{cell\_type}.\footnote{The \pascal\ types to which the names defined by
+\code{HashTrie::types\_t} are referring to were shown by the listings on
+\pagerefrange{pascal-types-begin}{pascal-types-end}.
+More details about the \cplusplus\ counterparts of these types will be given
+in the next subsection.}}
+\erow
+
+\code{HashTrie::types\_traits\_t} & \structtempl\ \code{<typename T, types\_t t>}
+\desc{Define the underlying integer type and the associated limits for the named
+type \code{t}.}
+\erow
+
+\code{HashTrie::add<>} & \functempl
+\desc{Define an addition operation, transparently over the boxed or just plain
+underlying unsigned integer types used by \code{HashTrie::HashTrie<>}. Implement
+the operation such a way that the type of the resulting value be wide enough
+to avoid overflowing.}
+\erow
+
+\code{HashTrie::sub<>} & \functempl
+\desc{Define an subtraction operation, transparently over the boxed or just plain
+underlying unsigned integer types used by \code{HashTrie::HashTrie<>}. Implement
+the operation such a way that the type of the resulting value be wide enough
+to avoid underflowing.}
+\erow
+
+\code{HashTrie::char\_traits\_t} & \structtempl\ \code{<typename C = char>}
+\desc{Define the default traits class template associated to the character
+type used by \code{HashTrie::HashTrie<>}.\footnote{The class template
+\code{HashTrie::char\_traits\_t<>}
+relates closely to the issues of tables
+\code{lowercase},
+\code{uppercase} and
+\code{lettercode} in the \pascal\ implementation. (see the accounts given
+on \pagerefrange{pascal-lettercode-begin}{pascal-lettercode-end}.)}}
+\erow
+
+\code{HashTrie::size\_traits\_t} & \struct
+\desc{Encompass a few static parameters of class \code{HashTrie::HashTrie<>}:
+\code{max\_count},
+\code{trie\_size} and
+\code{tolerance}. The last two of these are defined by corresponding
+\code{CONFIG\_HASH\_TRIE\_*} configuration parameters.}
+\erow
+
+\code{HashTrie::HashTrie<>} & \classtempl
+\desc{Implement the main functionality of the \emph{hash-trie} data structure
+of Knuth \& Liang.}
+\end{ntabular}
+% 
+\subsection{The Implementation of \code{HashTrie<>} Class Template}
+\label{hash-trie-class-templ-impl}
+%
+This section is devoted to plunging into the most concrete details of the
+implementation code of the \hashtrie* structure of Knuth \& Liang. The previous
+section glimpsed over the members of \code{HashTrie} namespace which accomodate
+the class \code{HashTrie<>} and its immediate relatives. Below is listed
+the \cplusplus\ code for the definitions of
+class \code{HashTrie<>},
+of \structtempl\ \code{type\_traits\_t},
+of \structtempl\ \code{char\_traits\_t},
+and of \struct\ \code{size\_traits\_t}.
+Also is listed the implementation code
+for the constructor of the \code{HashTrie<>} class,
+for its public method \code{put} and
+for its most important function, the private method \code{find}.
+
+The listings were shortened a bit by eliminating certain peripheral inline
+function code and all static assertions, comment lines and debugging code.\footnote{%
+The listing parts of \code{hash-trie.cpp} seen in this section and in the previous
+one are annotated with actual line numbers from the source file itself.}
+
+For the implementation code in \code{hash-trie.cpp}, I took into account the
+newest corrections of the \pascal\ implementation of \hashtrie*\, as published
+by Knuth on his own site.\footnote{%
+\url{http://www.cs.stanford.edu/~uno/lp.html}: the web page of \cite{knuth:literate}
+-- contains the errata of the latest printing of the book, the sixth, of 2013;\\
+\url{http://www.cs.stanford.edu/~uno/lp-err.ps.gz}: the errata for the first
+printing of the book.} (see the source lines
+\ref{cpp-make-alpha-expr} and \ref{cpp-init-count-zero} below.)
+
+The \pascal\ type and variable definitions on
+\pagerefrange{pascal-types-begin}{pascal-types-end},
+as was already emphasized, are part of the core structures of \hashtrie*.
+These definitions imply four kinds of \emph{integer subrange} types to be
+used by the \cplusplus\ implementation: (The subrange type \code{1..26} is
+brought forward by the definitions of tables
+\code{lowercase},
+\code{uppercase} and
+\code{lettercode}
+on \vpageref{pascal-lettercode-begin}.)
+%
+\newcommand{\unnamed}{\emph{unnamed}}%
+%
+\begin{ctabular}{ScScScSc}
+\toprule
+\head{\pascal\ name} & \head{\pascal\ subrange type} & \head{\cplusplus\ \enum\ name}\\
+\midrule
+\unnamed             & \code{0..max\_count}          & \code{count\_type}\\
+\code{pointer}       & \code{0..trie\_size}          & \code{pointer\_type}\\
+\unnamed             & \code{1..26}                  & \code{letter\_type}\\
+\unnamed             & \code{empty\_slot..header}    & \code{cell\_type}\\
+\bottomrule
+\end{ctabular}
+%
+The \cplusplus\ types which correspond to the \pascal\ subrange types above are
+defined through the \structtempl\ \code{types\_traits\_t}. For each \enum\ name
+there is a specialized version of the \code{types\_traits\_t} which defines an
+inner type \code{type\_t} -- the \cplusplus\ counterpart of the \pascal\ subrange
+type of the table above. The integral constants needed for these defintions are
+taken in by \code{types\_traits\_t} from the class namespace of its template
+argument \code{T}. Further to be seen below is that the template argument \code{T}
+will actually name the \code{HashTrie<>} class itself (see the source lines
+\ref{cpp-inner-types-traits-begin}\~\ref{cpp-inner-types-traits-end}
+below: there is an instance of the well-known \cplusplus\ idiom of name
+\emph{Curiously Recurring Template Pattern}, \emph{CRTP}).
+%
+% $ hash-trie-source --types-traits --tex -t -r 1687-1691 -r 1708-1712 -r 1729-1733 -r 1750-1754
+%
+\begin{hashtrielisting}[1673]
+template<typename T>
+struct types_traits_t<T, count_type>
+{
+	typedef unsigned short base_t;
+#if defined(CONFIG_HASH_TRIE_STRICT_TYPES)
+	typedef Ext::box_t<
+		base_t, types_traits_t<T, count_type>> type_t;
+#else
+	typedef base_t type_t;
+#endif
+
+	// count_t: [0..max_count]
+	static constexpr size_t min = 0;
+	static constexpr size_t max = T::max_count;@\skipnumbering{1692}@
+};
+
+template<typename T>
+struct types_traits_t<T, pointer_type>
+{
+	typedef unsigned short base_t;
+#if defined(CONFIG_HASH_TRIE_STRICT_TYPES)
+	typedef Ext::box_t<
+		base_t, types_traits_t<T, pointer_type>> type_t;
+#else
+	typedef base_t type_t;
+#endif
+
+	// pointer_t: [0..trie_size]
+	static constexpr size_t min = 0;
+	static constexpr size_t max = T::trie_size;@\skipnumbering{1713}@
+};
+
+template<typename T>
+struct types_traits_t<T, letter_type>
+{
+	typedef unsigned char base_t;
+#if defined(CONFIG_HASH_TRIE_STRICT_TYPES)
+	typedef Ext::box_t<
+		base_t, types_traits_t<T, letter_type>> type_t;
+#else
+	typedef base_t type_t;
+#endif
+
+	// letter_t: [min_letter..max_letter]
+	static constexpr size_t min = T::min_letter;
+	static constexpr size_t max = T::max_letter;@\skipnumbering{1734}@
+};
+
+template<typename T>
+struct types_traits_t<T, cell_type>
+{
+	typedef unsigned char base_t;
+#if defined(CONFIG_HASH_TRIE_STRICT_TYPES)
+	typedef Ext::box_t<
+		base_t, types_traits_t<T, cell_type>> type_t;
+#else
+	typedef base_t type_t;
+#endif
+
+	// cell_t: [empty_slot..header]
+	static constexpr size_t min = T::empty_slot;
+	static constexpr size_t max = T::header;@\skipnumbering{1755}@
+};
+\end{hashtrielisting}
+%
+The purpose of template \code{char\_traits\_t} is that of alleviating the
+cumbersome \pascal-specific mechanisms embodied by the tables
+\code{lowercase},
+\code{uppercase} and
+\code{lettercode}
+of Knuth's implementation
+(see the accounts on \pagerefrange{pascal-lettercode-begin}{pascal-lettercode-end}).
+Designing \code{HashTrie<>} with a template template parameter \code{T}
+framing up the \emph{character representation traits} of the class was a
+consequence of the following requirement: the class need to avoid
+hard-coding its dependecies on character representation peculiarities within
+the implementation code itself. Having the template parameter \code{T} --
+with the default value set to the fully fledged \code{char\_traits\_t} \structtempl\ --
+enhances the flexibility of the implementation of \code{HashTrie<>} 
+working transparently with several different types of character representations.
+%
+% $ hash-trie-source --char-traits --tex -t -r 1898-1906 -r 1914-1919 -r 1921-1924 -r 1926-1929 -r 1931-1943 -r 1945-1953 -r 1956-1957
+%
+\begin{hashtrielisting}[1876]
+template<typename C = char>
+struct char_traits_t
+{
+	typedef
+		typename
+			std::remove_cv<C>::type
+		char_t;
+	typedef
+		Ext::unsigned_t<char_t>
+		uchar_t;
+	typedef
+		std::char_traits<char_t>
+		traits_t;
+	typedef
+		Ext::unsigned_t<
+			typename traits_t::int_type>
+		uint_t;
+	typedef
+		size_t code_t;
+	typedef
+		std::basic_string<char_t>
+		string_t;@\skipnumbering{1907}@
+	static constexpr uint_t to_int(char_t ch)
+	{ return traits_t::to_int_type(ch); }
+
+	static constexpr char_t to_char(uint_t uint)
+	{ return traits_t::to_char_type(uint); }
+
+	static constexpr char_t to_lower(char_t ch);@\skipnumbering{1920}@
+	static constexpr bool is_valid_char(char_t a)@\skipnumbering{1925}@
+	static constexpr bool is_valid_code(code_t a)@\skipnumbering{1930}@
+	static code_t to_code(char_t c)@\skipnumbering{1944}@
+	static char_t from_code(code_t c)@\skipnumbering{1954}@
+	static constexpr code_t min_letter = 1;
+	static constexpr code_t max_letter = min_letter +@\skipnumbering{1958}@
+	static constexpr code_t header     = max_letter + 1;
+	static constexpr code_t empty_slot = 0;
+};
+\end{hashtrielisting}
+%
+The sole role of \code{size\_traits\_t} is that of encapsulating the \pascal\
+\code{define}s on \pagerefrange{pascal-types-begin}{pascal-types-end}:
+%
+% $ hash-trie-source --size-traits --tex -t
+%
+\begin{hashtrielisting}[1976]
+struct size_traits_t
+{
+	static constexpr size_t max_count = 32767;
+	static constexpr size_t trie_size = CONFIG_HASH_TRIE_TRIE_SIZE; // = 32767;
+	static constexpr size_t tolerance = CONFIG_HASH_TRIE_TOLERANCE; // = 1000;
+};
+\end{hashtrielisting}
+%
+The \classtempl\ \code{HashTrie<>} has three template arguments: \code{C},
+\code{T} and \code{S}. \code{C} is the type used by the class for character
+representation; \code{T} is the traits class associated to the character
+representation type of the class; \code{S} is the class of which namespace
+defines statically three size-related constants parametrizing \code{HashTrie<>}.
+Sensible defaults were provided for each of these the template parameters --
+defaults which were already presented above.
+
+The public interface of \code{HashTrie<>} is quite simple: a default constructor,
+two overloaded methods \code{put}, and three printing related methods:
+\code{print},
+\code{dump} and
+\code{print\_stats}.
+The third of these printing methods is available only when \code{hash-trie.cpp}
+was compiled with the \emph{statistics collecting code} enabled, \ie\ when the
+\code{CONFIG\_HASH\_TRIE\_STATISTICS} configuration parameter was
+\define d.
+%
+% $ hash-trie-source --hash-trie --tex -t -r 2012-2014 -r 2025-2082 -r 2097-2176 -r 2178-2182 -r 2209-2216 -r 2222-2225 -r 2233-2235 -r 2237-2242 -r 2247-2257 -r 2267-2268 -l 2015:cpp-inner-types-traits-begin -l 2024:cpp-inner-types-traits-end -l 2187:cpp-types-first-line -l 2205:cpp-types-last-line -l 2236:cpp-make-alpha-expr
+%
+\begin{hashtrielisting}[1983]
+template<
+	typename C = char,
+	template<typename> class T = char_traits_t,
+	typename S = size_traits_t>
+class HashTrie :
+	private T<C>,
+	private S
+{
+public:
+	typedef S size_traits_t;
+	typedef T<C> char_traits_t;
+	typedef typename char_traits_t::char_t char_t;
+	typedef typename char_traits_t::string_t string_t;
+
+	HashTrie();
+
+	bool put(const char_t*);
+
+	bool put(const string_t& str)
+	{ return put(str.c_str()); }
+
+	void print(std::basic_ostream<char_t>&) const;
+	void dump(std::basic_ostream<char_t>&) const;
+
+#ifdef CONFIG_HASH_TRIE_STATISTICS
+	void print_stats(std::basic_ostream<char_t>&) const;
+#endif
+
+private:@\skipnumbering{2015}@
+	template<types_t t>@\label{cpp-inner-types-traits-begin}@
+	using types_traits_t = types_traits_t<HashTrie, t>;
+
+	using size_traits_t::max_count;
+	using size_traits_t::trie_size;
+	using size_traits_t::tolerance;
+	using char_traits_t::min_letter;
+	using char_traits_t::max_letter;
+	using char_traits_t::empty_slot;
+	using char_traits_t::header;@\label{cpp-inner-types-traits-end}@@\skipnumbering{2083}@
+	template<types_t i, types_t e>
+	struct array_of_t
+	{
+		typedef
+			typename types_traits_t<e>::type_t
+			elem_t;
+
+		class type_t
+		{
+		public:
+			static constexpr size_t lo =
+				types_traits_t<i>::min;
+			static constexpr size_t hi =
+				types_traits_t<i>::max;@\skipnumbering{2177}@
+		private:@\skipnumbering{2183}@
+			elem_t array[hi - lo + 1];
+		};
+	};
+
+	typedef typename types_traits_t<count_type>::type_t   count_t;@\label{cpp-types-first-line}@
+	typedef typename types_traits_t<pointer_type>::type_t pointer_t;
+	typedef typename types_traits_t<letter_type>::type_t  letter_t;
+	typedef typename types_traits_t<cell_type>::type_t    cell_t;
+
+	typedef
+		typename array_of_t<pointer_type, count_type>::type_t
+		count_array_t;
+	typedef
+		typename array_of_t<pointer_type, pointer_type>::type_t
+		pointer_array_t;
+	typedef
+		typename array_of_t<pointer_type, cell_type>::type_t
+		cell_array_t;
+
+	cell_array_t    ch;
+	count_array_t   count;
+	pointer_array_t link;
+	pointer_array_t sibling;@\label{cpp-types-last-line}@
+
+	// x_n = (alpha * n) % mod_x
+	pointer_t x;@\skipnumbering{2217}@
+	static letter_t to_letter(char_t c)
+	{ return char_traits_t::to_code(c); }
+
+	static char_t to_char(letter_t l)
+	{ return char_traits_t::from_code(l); }  @\skipnumbering{2226}@
+	pointer_t find(const char_t*);
+
+	void print_word(pointer_t, std::basic_ostream<char_t>&, bool) const;
+	void dump_word(pointer_t, std::basic_ostream<char_t>&, bool&) const;
+	void dump_empty(std::basic_ostream<char_t>&) const;
+
+	static constexpr size_t make_alpha(size_t trie_size, size_t max_letter)@\skipnumbering{2236}@
+	{ return std::ceil(0.61803 * (trie_size - 2 * max_letter)); }@\label{cpp-make-alpha-expr}@@\skipnumbering{2243}@
+	static constexpr size_t alpha = make_alpha(trie_size, max_letter);
+	static constexpr size_t mod_x = trie_size - 2 * max_letter;
+	static constexpr size_t max_h = mod_x + max_letter;
+	static constexpr size_t max_x = mod_x - alpha;@\skipnumbering{2258}@
+#ifdef CONFIG_HASH_TRIE_STATISTICS
+	struct stats_t
+	{
+		size_t loaded_words = 0;
+		size_t failed_words = 0;
+		size_t duplicated_words = 0;
+		size_t empty_slots = 0;
+
+		Sys::clocks_t trie_time = {};@\skipnumbering{2269}@
+	};
+
+	mutable stats_t stats;
+#endif
+};
+\end{hashtrielisting}
+%
+The \structtempl\ \code{HashTrie<>::array\_of\_t<>} and its inner defined class
+\code{type\_t} is very important to the internal economy of class \code{HashTrie<>}.
+This is so because the class \code{array\_of\_t<>::type\_t} is implementing
+the \cplusplus\ counterparts of the \pascal\ \code{array}s seen on  
+\pagerefrange{pascal-types-begin}{pascal-types-end}. This class provides two
+oveloaded methods (which were cut off from the listing above), namely
+\code{operator[]} and \code{assign}. Each of these methods are to be seen
+at work in the constructor of class \code{HashTrie<>} and in its \code{find}
+method.
+
+The method templates \code{operator[]} are offering transparently
+range-checked or range-unchecked access to an underlying \cplain-style array.
+The dimension of this \cplain-array is determined by the first template argument
+of \code{array\_of\_t<>}, while the second template argument of \code{array\_of\_t<>}
+decides the type of the elements of this array. Yet an important feature of the
+\code{operator[]} methods of \code{array\_of\_t<>::type\_t} is the following:
+these methods model the semantics of \pascal\ \code{array}s -- that is that
+indexing within the structure doesn't start at \code{0}, but at the position
+defined by the respective type declaration.
+
+A third significant trait of these \code{operator[]} methods is that they
+accept transparently boxed or just plain integer typed values as indices.
+\code{HashTrie<>} uses boxed integers within its internal workings if and
+only if the configuration parameter \code{CONFIG\_HASH\_TRIE\_STRICT\_TYPES}
+is \define d at the time of its compilation.
+
+The alternative of checking or not the indexed access into such an \emph{array}
+structure is arbitrated by the configuration parameter
+\code{CONFIG\_HASH\_TRIE\_ARRAY\_BOUNDS}: indexing is range-checked if and only
+if this parameter is \define d at the time of compilation of \code{hash-trie.cpp}.
+
+The methods
+\code{``void assign(size\_t first, size\_t last, \emph{type} value)''}
+do assign \code{value} to each element of the underlying array in
+the range \code{[first, last]}. Similarly to the \code{operator[]} methods,
+these \code{assign} methods do range checking if and only if the configuration
+parameter \code{CONFIG\_HASH\_TRIE\_ARRAY\_BOUNDS} was \define d prior to
+initiate the compilation of \code{hash-trie.cpp}.
+
+At this moment, one can easily examine the veracity of the forecast made in
+subsection \ref{knuth-pascal-impl} about the core \pascal\ structures of \hashtrie*\
+defined on \pagerefrange{pascal-types-begin}{pascal-types-end} to be tightly
+parallel with the corresponding \cplusplus\ structures. The definitions of
+\code{link},
+\code{sibling},
+\code{ch} and
+\code{count},
+as shown by the \pascal\ source lines
+\ref{pas-types-first-line}\~\ref{pas-types-last-line} on
+\pagerefrange{pas-types-first-line}{pas-types-last-line},
+and their parallel \cplusplus\ definitions shown by source lines
+\ref{cpp-types-first-line}\~\ref{cpp-types-last-line} on
+\pagerefrange{cpp-types-first-line}{cpp-types-last-line},
+are identical indeed.
+
+One final note about the declaration of \code{HashTrie<>} concerns its static
+function \code{make\_alpha}: even though \code{make\_alpha} makes use of
+the standard non-\code{constexpr} function \code{std::ceil}, its declaration as
+\code{constexpr} is, nota bene!, correct.\footnote{%
+By the \cplusplus11 standard, ISO/IEC 14882:2011,
+the function \code{std::ceil} doesn't have to be \code{constexpr}, yet
+\prog{gcc} of version at least \code{4.8.0}, in the header file \code{cmath},
+boils \code{std::ceil} down to the undocumented built-ins
+\code{\_\_builtin\_ceilf} and 
+\code{\_\_builtin\_ceill}.}
+
+The constructor of class \code{HashTrie<>} is very simple: it initializes the
+inner structures and variables of the class exactly as Knuth does 
+\cite[\parapg{19}{159} and \parapg{23}{160}]{knuth:literate}:
+%
+% $ hash-trie-source --hash-trie-func=HashTrie --tex -t -l 2291:cpp-init-count-zero
+%
+\begin{hashtrielisting}[2275]
+template<
+	typename C,
+	template<typename> class T,
+	typename S>
+HashTrie<C, T, S>::HashTrie()
+{
+	ch.assign(header, trie_size, empty_slot);
+	link.assign(1, max_letter, 0);
+	count.assign(1, max_letter, 0);
+
+	for (pointer_t i = 1; i <= max_letter; ++ i) {
+		ch[i] = i;
+		sibling[i] = i - 1;
+	}
+
+	link[0] = 0;
+	count[0] = 0;@\label{cpp-init-count-zero}@
+	ch[0] = header;
+	sibling[0] = header - 1;
+
+	x = 0;
+}
+\end{hashtrielisting}
+%
+The \code{put} methods of \code{HashTrie<>} are little more than just public
+front-ends to the hard-working private function \code{find}. Nevertheless,
+the \code{put} method shown below does certain housekeeping:
+it checks for valid user input\footnote{The \emph{trie} structures
+%!!!\cite[\parapg{6.3}{492}]{knuth:taocp3}
+\cite[\para{6.3}]{knuth:taocp3}
+-- in particular the \emph{hash-tries} --, by definition, cannot
+contain empty words.}, increments the counter associated to the input word,
+if any, and, when \code{CONFIG\_HASH\_TRIE\_STATISTICS}
+is \define d, updates its \code{stats} structure:
+%
+% $ hash-trie-source --hash-trie-func=put --tex -t
+%
+\begin{hashtrielisting}[2621]
+template<
+	typename C,
+	template<typename> class T,
+	typename S>
+bool HashTrie<C, T, S>::put(const char_t* str)
+{
+	if (*str == '\0')
+		Sys::error<Error>("hash tries cannot contain empty words");
+
+#ifdef CONFIG_HASH_TRIE_STATISTICS
+	Sys::utime_t time;
+#endif
+
+	// 34. Input the text, maintaining a dictionary with frequency count
+	auto p = find(str);
+
+#ifdef CONFIG_HASH_TRIE_STATISTICS
+	stats.trie_time += time();
+
+	if (p)
+		stats.loaded_words ++;
+	else
+		stats.failed_words ++;
+	if (p && count[p])
+		stats.duplicated_words ++;
+#endif
+
+	if (!p) return false;
+	count[p] ++;
+	return true;
+}
+\end{hashtrielisting}
+%
+The method \code{find} of \code{HashTrie<>} class constitutes the central part
+of Knuth's \hashtrie*\ data structure. It substantiates the core algoritm of this
+data structure -- it is the \cplusplus\ counterpart of Knuth's \pascal\ function
+\code{find\_buffer}
+\cite[\paras{20}{21} and \paraspp{24}{31}{159}{162}]{knuth:literate}:
+%
+% $ hash-trie-source --hash-trie-func=find --tex -t -r 2306-2421 -r 2430-2453 -r 2460-2482 -r 2484-2499 -r 2503-2509 -r 2516-2521 -r 2542 -r 2546 -r 2548 -r 2577 -r 2581 -r 2591 -l 2426:cpp-last-h-def -l 2571:cpp-delta-def-int -l 2500:cpp-last-h-assign-1 -l 2510:cpp-last-h-assign-2 -l 2584:cpp-delta-assign-1 -l 2594:cpp-delta-assign-2
+%
+\begin{hashtrielisting}[2298]
+template<
+	typename C,
+	template<typename> class T,
+	typename S>
+typename
+	HashTrie<C, T, S>::pointer_t
+	HashTrie<C, T, S>::find(const char_t* str)
+{@\skipnumbering{2422}@
+	const pointer_t tolerance2 = tolerance;
+	// trial header location
+	pointer_t h;
+	// the final one to try
+	pointer_t last_h; //!!!INT int last_h;@\label{cpp-last-h-def}@
+
+	const auto get_set_for_computing_header_locations = [&]() {
+		// 24. Get set for computing header locations@\skipnumbering{2454}@
+		if (x >= max_x)
+			x -= max_x;
+		else
+			x += alpha;
+
+		h = x + max_letter + 1; // now max_letter < h <= trie_size - max_letter@\skipnumbering{2483}@
+		if (h > max_h - tolerance) {@\skipnumbering{2500}@
+			last_h = add(h, tolerance2) - mod_x;@\label{cpp-last-h-assign-1}@
+		}
+		else {@\skipnumbering{2510}@
+			last_h = h + tolerance;@\label{cpp-last-h-assign-2}@
+		}
+	};
+
+	const auto compute_the_next_trial_header_location = [&]() {
+		// 25. Compute the next trial header location h, or abort find@\skipnumbering{2522}@
+		if (h == last_h)
+			return false;
+		if (h == max_h)
+			h = max_letter + 1;
+		else
+			h ++;
+		return true;
+	};
+
+	// the current word position
+	pointer_t p
+		= to_letter(*str ++);
+	while (*str) {
+		// current letter code
+		letter_t c
+			= to_letter(*str ++);
+		// 21. Advance p to its child number c
+		if (link[p] == 0) {
+			// 27. Insert the firstborn child of p and move to it, or abort find
+			get_set_for_computing_header_locations();@\skipnumbering{2543}@
+			do {
+				if (!compute_the_next_trial_header_location())
+					return 0;@\skipnumbering{2547}@
+			} while (ch[h] != empty_slot || ch[h + c] != empty_slot);@\skipnumbering{2549}@
+			link[p] = h;
+			link[h] = p;
+			p = h + c;
+			ch[h] = header;
+			ch[p] = c;
+			sibling[h] = p;
+			sibling[p] = h;
+			count[h] = 0;
+			count[p] = 0;
+			link[p] = 0;
+		}
+		else {
+			// the next word position
+			pointer_t q
+				= link[p] + c;
+			if (ch[q] != c) {
+				if (ch[q] != empty_slot) {
+					// 29. Move p's family to a place where child c will fit,
+					//     or abort find
+					// family member to be moved
+					pointer_t r;
+					// amount of motion
+					//!!!INT int delta;@\label{cpp-delta-def-int}@
+					// have we found a new homestead?
+					bool slot_found;
+					// 31. Find a suitable place h to move, or abort find
+					slot_found = false;
+					get_set_for_computing_header_locations();@\skipnumbering{2578}@
+					do {
+						if (!compute_the_next_trial_header_location())
+							return 0;@\skipnumbering{2582}@
+						if (ch[h + c] == empty_slot) {
+							r = link[p];
+							auto delta = sub(h, r); //!!!INT delta = h - r;@\label{cpp-delta-assign-1}@
+							while (ch[r + delta] == empty_slot &&
+									sibling[r] != link[p])
+								r = sibling[r];
+							slot_found = ch[r + delta] == empty_slot;
+						}
+					} while (!slot_found);@\skipnumbering{2592}@
+					q = h + c;
+					r = link[p];
+					auto delta = sub(h, r); //!!!INT delta = h - r;@\label{cpp-delta-assign-2}@
+					do {
+						sibling[r + delta] = sibling[r] + delta;
+						ch[r + delta] = ch[r];
+						ch[r] = empty_slot;
+						count[r + delta] = count[r];
+						link[r + delta] = link[r];
+						if (link[r]) link[link[r]] = r + delta;
+						r = sibling[r];
+					} while (ch[r] != empty_slot);
+				}
+				// 28. Insert child c into p's family
+				h = link[p];
+				while (sibling[h] > q)
+					h = sibling[h];
+				sibling[q] = sibling[h];
+				sibling[h] = q;
+				ch[q] = c;
+				count[q] = 0;
+				link[q] = 0;
+			}
+			p = q;
+		}
+	}
+	return p;
+}
+\end{hashtrielisting}
+%
+Due to the infrastructure already built, the above implementation is almost
+one hunderd percent a direct translation of Knuth's \pascal\ code to \cplusplus.
+The few minute yet important differences between the two implementations are
+listed by the table below. The second column of the table contains references
+relative to \cite{knuth:literate} and the third column -- references to the
+\cplusplus\ source code from above.
+%
+\begin{dtabular}
+declaration of \code{last\_h} & \pgparalno{161}{26}{3} & \pgreflno{cpp-last-h-def}
+\desc{The \pascal\ code declares the type of \code{last\_h} to be \code{integer}.
+The \cplusplus\ code declares this variable to be of type \code{pointer\_t}.}
+\erow
+
+assignment to \code{last\_h} & \pgparalno{161}{24}{7} & \pgreflno{cpp-last-h-assign-1}
+\desc{The \pascal\ code assigns to \code{last\_h} by the expression
+``\code{h + tolerance - mod\_x}''. The \cplusplus\ code does
+that by the expression ``\cppinline{add(h, tolerance2) - mod\_x}''.}
+\erow
+
+declaration of \code{delta} & \pgparalno{162}{30}{3} & \pgreflno{cpp-delta-def-int}
+\desc{The \pascal\ code declares \code{delta} an \code{integer} and assigns
+to it twice. The \cplusplus\ code removes the shared declaration and replaces
+each assignment with a complete definition.}
+\erow
+
+1st assignment to \code{delta} & \pgparalno{162}{31}{5} & \pgreflno{cpp-delta-assign-1}
+\desc{The \pascal\ code assigns to \code{delta} by the statement
+``\code{delta = h - r}''. The \cplusplus\ code replaces this assignment with
+``\cppinline{auto delta = sub(h, r)}''.}
+\erow
+
+2nd assignment to \code{delta} & \pgparalno{162}{29}{3} & \pgreflno{cpp-delta-assign-2}
+\desc{The same difference as in the case of the 1st assignment to \code{delta}.}
+\end{dtabular}
+%
+The difference of the two implementations stems from the fact that the
+\code{Ext::box\_t<>} class template, which accomplishes the boxing of the integral
+types used by \code{HashTrie<>} -- \ie\ the integer types of name \code{base\_t}
+defined inside the class namespaces of each of the four instances of the class
+template \code{types\_traits\_t<>} above --, is quite strict with regards
+to the operations applied to values of its type. The class template
+\code{Ext::box\_t<>} is supposed to simulate in \cplusplus\ the semantics
+of subrange types of \pascal, that is that it has to do bounds checking
+on assignments on values of its type. \code{Ext::box\_t<>} is, of course,
+doing that and, more so, it checks the bounds on each of its arithmetical
+operations too.
+
+The replacement of expression ``\code{h + tolerance - mod\_x}''  with the
+expression ``\code{add(h, tolerance2) - mod\_x}'' had to be done, because,
+as it is easily provable, under cetain conditions, the subexpression
+``\code{h + tolerance}'' is exceeding the upper bound \code{trie\_size}
+of the boxed integer \code{pointer\_t}. It is worthy of notice the readily
+provable fact that both assignments to \code{last\_h} on lines
+\ref{cpp-last-h-assign-1} and \ref{cpp-last-h-assign-2} are correct:
+each of the expression on the right side of these assignments do not
+exceed upon evaluation the bounds of \code{pointer\_t}.
+
+The two assignments to \code{delta} shown above had to be adjusted because of
+two reasons. The first one is that upon subtracting two \code{pointer\_t}s
+\code{h} and \code{r}, the result would be of type \code{pointer\_t} too.
+However, the original intent of \code{delta} included the possibility of it
+being a negative quantity. 
+
+The other reason for the code adjustement applied to \code{delta} is obvious
+once noticing that the boxed integral types used by \code{HashTrie<>} are each
+parametrized. Thus one cannot hard-code the type of \code{delta} without
+eventually getting into trouble. The function template \code{Ext::sub<>}
+is designed such a way that it decides the type of its resulting value based
+on the type of its arguments: the resulting type is choosen such that to avoid
+the occurence of undeflow errors upon the subtraction of the two input
+values.
+%
+\section{The \hashtrie\ Binary}
+%
+The \HashTrie's main component is the binary program \hashtrie\ which
+results upon compiling and linking the source file \code{hash-trie.cpp}.
+%
+The command line options of \hashtrie\ program are as follows:
+%
+\helplisting{hash-trie}
+%
+The \hashtrie\ program takes input from standard input \code{stdin} -- when its
+action option is one of
+\opt{-L|--load-only},
+\opt{-p|--print-trie} or
+\opt{-d|--dump-trie}.
+When the action option is either
+\opt{-P|--print-config} or
+\opt{-T|--print-types},
+\hashtrie\ is not taking input at all -- it is only printing out something as
+requested.
+If input is to be read in, it is supposed to be formed by words -- \ie\ 
+non-empty sequences of characters in range \code{[a-zA-Z]} -- each placed on a
+separate line.
+
+\label{hash-trie-config-params-begin}
+As already known from the previous section, any given build of \hashtrie\ is
+governed by the following six configuration parameters:
+%
+\begin{shelllisting}
+$ grep -E -how 'CONFIG_[A-Z0-9_]+' hash-trie.cpp|sort -u
+CONFIG_HASH_TRIE_ARRAY_BOUNDS
+CONFIG_HASH_TRIE_CHAR_TYPE
+CONFIG_HASH_TRIE_STATISTICS
+CONFIG_HASH_TRIE_STRICT_TYPES
+CONFIG_HASH_TRIE_TOLERANCE
+CONFIG_HASH_TRIE_TRIE_SIZE
+\end{shelllisting}
+%
+Also worthy of notice is that there exists the seventh governing parameter of
+\hashtrie: namely \code{DEBUG}, which is defined by default and is not defined
+when compiling \code{hash-trie.cpp} with code optimizations enabled. The \prog{gcc}
+compiler is told to enable the level \code{$NUM$} of code optimizations when invoking
+\prog{make} with option \opt{OPT=$NUM$}.
+The options \opt{--debug=WHAT} and \opt{--no-debug} of \hashtrie\ are available
+for usage only when \code{DEBUG} was defined at the time of compilation of the
+program.
+
+As a result of this condition, is easy to establish whether a given
+\hashtrie\ binary was build with debugging code enabled or not: the count obtained
+from the \prog{grep} command below is non-zero if and only if \code{DEBUG}
+is enabled:
+%
+\begin{shelllisting}
+$ make -B hash-trie OPT=0
+gcc -std=gnu++11 -Wall -Wextra -DPROGRAM=hash-trie -O0 hash-trie.cpp -o hash-trie -lstdc++
+$ ./hash-trie -?|grep -c debug
+0
+$
+\end{shelllisting}
+%
+All of the above \code{CONFIG\_HASH\_TRIE\_*} parameters are orthogonal
+to each other, with only two exceptions:
+%
+\begin{bitemize}
+\item \code{STRICT\_TYPES} implies \code{ARRAY\_BOUNDS};
+\item \code{TOLERANCE} and \code{TRIE\_SIZE}
+are constraining each other by the internal logic of class \code{HashTrie<>}
+in the source file \code{hash-trie.cpp}. (Look-up the source code for
+\compiletime\ assertions \code{CXX\_ASSERT} applied to expressions containing
+or relating to the static constants \code{tolerance} and \code{trie\_size}.)
+\end{bitemize}
+%
+The two parameters \code{STRICT\_TYPES} and \code{ARRAY\_BOUNDS} imply certain
+\runtime\ supplemental checks on the types involved in the class \code{HashTrie<>},
+each of these checks being made of \runtime\ assertions of \code{SYS\_ASSERT} kind.
+\code{SYS\_ASSERT} is \cplusplus\ preprocessing macro, which, however,
+is ruled out when the \code{DEBUG} parameter is not defined. Consequently,
+not defining \code{DEBUG} voids out all the supplemental restrictions
+the \code{STRICT\_TYPES} and \code{ARRAY\_BOUNDS} parameters are enforcing.
+There is also a positive side of this situation of \code{DEBUG} not being defined:
+the \hashtrie\ program will improve significantly its runtime speed.
+
+If \hashtrie\ was built with all its configuration parameters having their
+default values, it would produce the following output when invoked for the
+action option \opt{-P|--print-config}:
+%
+\begin{shelllisting}
+$ make -B hash-trie
+gcc -std=gnu++11 -Wall -Wextra -DDEBUG -DPROGRAM=hash-trie -g -gdwarf-3 hash-trie.cpp -o hash-trie -lstdc++
+$ ./hash-trie -P
+TOLERANCE:    1000
+TRIE_SIZE:    32767
+CHAR_TYPE:    char
+STRICT_TYPES: no
+ARRAY_BOUNDS: no
+STATISTICS:   no
+$
+\end{shelllisting}
+\label{hash-trie-config-params-end}
+%
+On a \gnulinux\ 64-bit Intel x86 CPU machine, the output of \hashtrie\ for action
+option \opt{-T|--print-types} would look like:
+%
+% $ ./hash-trie -T|table-view -P
+%
+\begin{shelllisting}
+$ ./hash-trie -T
+op   operand         operator      wider               result
+add  char            int           int                 int
+add  signed char     int           int                 int
+add  unsigned char   int           int                 int
+add  short           int           int                 int
+add  unsigned short  int           int                 int
+add  int             int           long long           long long
+add  unsigned int    unsigned int  unsigned long long  long long
+sub  char            int           int                 int
+sub  signed char     int           int                 int
+sub  unsigned char   int           int                 int
+sub  short           int           int                 int
+sub  unsigned short  int           int                 int
+sub  int             int           long long           long long
+sub  unsigned int    unsigned int  unsigned long long  long long
+\end{shelllisting}
+%
+Feeding \hashtrie\ in with two words \code{a} and \code{ab}, it would print out
+the following text tables when the action option is \opt{-p|--print-trie} and,
+respectively, \opt{-d|--dump-trie}:
+%
+% $ command -P make -B hash-trie
+% $ print a ab|./hash-trie -p|ssed -R 's/\t/   /;s/^(.{3})\s*/\1/'
+% $ print a ab|./hash-trie -d|head-tail -h4 -t7|ssed -R '/^\.\.\.$/{s//\x0\t\x0\t\x0\t\x0\t\x0\t\x0/;s/\x0/.../g}'|table-view -P|ssed -R 's/-//'
+%
+\begin{shelllisting}
+$ print() { printf '%s\n' "$@"; }
+$ print a ab|./hash-trie -p
+a   1
+ab  1
+$ print a ab|./hash-trie -d
+p      link[p]  ch[p]   sibling[p]  count[p]  word
+0      0        header  26          0         
+1      20247    1       0           1         a
+2      0        2       1           0         b
+...    ...      ...     ...         ...       ...
+25     0        25      24          0         y
+26     0        26      25          0         z
+...    .        .       .           .         .
+20247  1        header  20249       0         
+...    .        .       .           .         .
+20249  0        2       20247       1         ab
+...    .        .       .           .         .
+$
+\end{shelllisting}
+%
+When invoked with action option \opt{-L|--load-only}, \hashtrie\ would suppress
+its normal output, printing out only error messages. This behaviour is useful
+for example in conjunction with options \opt{-s|--print-stats} and \opt{-q|--quiet}.
+The options \opt{-s|--print-stats}, \opt{--no-print-stats} and \opt{--time-type}
+are available to the user of \hashtrie\ only when the program was built with the
+\code{STATISTICS} configuration parameter enabled (as in the \prog{make}
+invocation below).
+%
+\begin{shelllisting}
+$ make -B hash-trie CONFIG+=TOLERANCE=1 CONFIG+=TRIE_SIZE=55 CONFIG+=STATISTICS
+gcc -std=gnu++11 -Wall -Wextra -DDEBUG -DCONFIG_HASH_TRIE_TOLERANCE=1 -DCONFIG_HASH_TRIE_TRIE_SIZE=55 -DCONFIG_HASH_TRIE_STATISTICS -DPROGRAM=hash-trie -g -gdwarf-3 hash-trie.cpp -o hash-trie -lstdc++
+$ print|./hash-trie -L
+hash-trie: error:1: hash tries cannot contain empty words
+$ print _|./hash-trie -L
+hash-trie: error:1: invalid input char '\x5f'
+$ print a ab ac acd|./hash-trie -L
+hash-trie: error:4: failed to put 'acd' in trie
+$ print a ab ac acd|./hash-trie -L -s
+hash-trie: error:4: failed to put 'acd' in trie
+loaded-words:     3
+failed-words:     1
+duplicated-words: 0
+empty-slots:      26
+trie-time:        16
+$ print a ab ac acd|./hash-trie -L -s -q
+loaded-words:     3
+failed-words:     1
+duplicated-words: 0
+empty-slots:      26
+trie-time:        17
+$
+\end{shelllisting}
+%
+Note that the sole role of option \opt{-q|--quiet} is to inhibit the error messages
+of type: \msgdot{hash-trie: error:LINE: failed to put 'WORD' in trie}
+%
+\begin{bbibliography}{Knuth00}
+%
+\bibitem[Kern81]{kernighan:pascal}
+	Brian W. Kernighan. 1981.
+	\emph{Why Pascal is Not My Favorite Programming Language}. 
+	Technical Report 100, April, 1981.
+	Computing Science, AT\&T Bell Laboratories,
+	Murray Hill, NJ, USA.
+	\url{http://www.lysator.liu.se/c/bwk-on-pascal.html}
+\bibitem[Liang83]{liang:hyphenation}
+	Franklin Mark Liang. 1983.
+	\emph{Word hyphenation by computer}.
+	Ph.D. Thesis, Technical Report STA\=CS\=83\=977.
+	Stanford University, Department of Computer Science,
+	Stanford, CA, USA.
+	\url{http://www.tug.org/docs/liang/liang-thesis.pdf}
+\bibitem[BKM86]{bentley:pearls}
+	Jon Bentley, Donald E. Knuth and Doug McIlroy. 1986.
+	Programming Pearls: a literate program.
+	\emph{Communications of the Association of Computing Machinery}
+	29, 6 (June 1986), 471-483.
+\bibitem[Knuth92]{knuth:literate}
+	Donald E. Knuth. 1992.
+	\emph{Literate Programming}.
+	CSLI Lecture Notes Number 27.
+	Stanford University, Center for the Study of Language and Information,
+	Stanford, CA, USA.
+\bibitem[Knuth98]{knuth:taocp3}
+	Donald E. Knuth. 1998.
+	\emph{The Art of Computer Programming,  Volume 3: (2nd Ed.) Sorting and Searching}.
+	Addison Wesley Longman Publishing Co., Inc.,
+	Redwood City, CA, USA.
+\bibitem[Strou13]{stroustrup:tc++pl4}
+	Bjarne Stroustrup. 2013.
+	\emph{The C++ Programming Language} (4th ed.).
+	Addison-Wesley Professional.
+%
+\end{bbibliography}
+%
+\let\thefootnote\relax%
+\footnotetext{%
+\renewcommand{\Hashtrie}{Hash-Trie}%
+Copyright \copyright\ 2016\hspace{1em}\textbf{\vargyas}
+
+This file is part of \HashTrie.
+
+\HashTrie\ is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+\HashTrie\ is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with \HashTrie.  If not, see \url{http://www.gnu.org/licenses/}.}
+%
+\end{document}
+
+
