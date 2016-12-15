@@ -1098,10 +1098,10 @@ handler function:
 The complete definition of \code{main} function is as follows:
 %
 % $ sha1sum hash-trie.cpp
-% 7ba8b1459f0198c93b78c9e1a96faae7f8512824  hash-trie.cpp
+% 1901535f6047804749deb5bbf5beb13845b486b2  hash-trie.cpp
 % $ hash-trie-source --main-func --tex -t
 %
-\begin{hashtrielisting}[3406]
+\begin{hashtrielisting}[3429]
 int main(int argc, char* argv[])
 {
 	const auto opt =
@@ -1140,7 +1140,7 @@ to the function \code{exec\_hash\_trie}:
 %
 % $ hash-trie-source --exec-hash-trie --tex -t
 %
-\begin{hashtrielisting}[3371]
+\begin{hashtrielisting}[3394]
 using hash_trie_t = HashTrie::HashTrie<Sys::char_t>;
 
 using print_func_t = void (hash_trie_t::*)(Sys::ostream&) const;
@@ -1469,9 +1469,9 @@ will actually name the \code{HashTrie<>} class itself (see the source lines
 below: there is an instance of the well-known \cplusplus\ idiom of name
 \emph{Curiously Recurring Template Pattern}, \emph{CRTP}).
 %
-% $ hash-trie-source --types-traits --tex -t -r 1687-1691 -r 1708-1712 -r 1729-1733 -r 1750-1754
+% $ hash-trie-source --types-traits --tex -t -r 1710-1714 -r 1731-1735 -r 1752-1756 -r 1773-1777
 %
-\begin{hashtrielisting}[1673]
+\begin{hashtrielisting}[1696]
 template<typename T>
 struct types_traits_t<T, count_type>
 {
@@ -1485,7 +1485,7 @@ struct types_traits_t<T, count_type>
 
 	// count_t: [0..max_count]
 	static constexpr size_t min = 0;
-	static constexpr size_t max = T::max_count;@\skipnumbering{1692}@
+	static constexpr size_t max = T::max_count;@\skipnumbering{1715}@
 };
 
 template<typename T>
@@ -1501,7 +1501,7 @@ struct types_traits_t<T, pointer_type>
 
 	// pointer_t: [0..trie_size]
 	static constexpr size_t min = 0;
-	static constexpr size_t max = T::trie_size;@\skipnumbering{1713}@
+	static constexpr size_t max = T::trie_size;@\skipnumbering{1736}@
 };
 
 template<typename T>
@@ -1517,7 +1517,7 @@ struct types_traits_t<T, letter_type>
 
 	// letter_t: [min_letter..max_letter]
 	static constexpr size_t min = T::min_letter;
-	static constexpr size_t max = T::max_letter;@\skipnumbering{1734}@
+	static constexpr size_t max = T::max_letter;@\skipnumbering{1757}@
 };
 
 template<typename T>
@@ -1533,7 +1533,7 @@ struct types_traits_t<T, cell_type>
 
 	// cell_t: [empty_slot..header]
 	static constexpr size_t min = T::empty_slot;
-	static constexpr size_t max = T::header;@\skipnumbering{1755}@
+	static constexpr size_t max = T::header;@\skipnumbering{1778}@
 };
 \end{hashtrielisting}
 %
@@ -1553,9 +1553,9 @@ with the default value set to the fully fledged \code{char\_traits\_t} \structte
 enhances the flexibility of the implementation of \code{HashTrie<>} 
 working transparently with several different types of character representations.
 %
-% $ hash-trie-source --char-traits --tex -t -r 1898-1906 -r 1914-1919 -r 1921-1924 -r 1926-1929 -r 1931-1943 -r 1945-1953 -r 1956-1957
+% $ hash-trie-source --char-traits --tex -t -r 1921-1929 -r 1937-1942 -r 1944-1947 -r 1949-1952 -r 1954-1966 -r 1968-1976 -r 1979-1980
 %
-\begin{hashtrielisting}[1876]
+\begin{hashtrielisting}[1899]
 template<typename C = char>
 struct char_traits_t
 {
@@ -1577,20 +1577,20 @@ struct char_traits_t
 		size_t code_t;
 	typedef
 		std::basic_string<char_t>
-		string_t;@\skipnumbering{1907}@
+		string_t;@\skipnumbering{1930}@
 	static constexpr uint_t to_int(char_t ch)
 	{ return traits_t::to_int_type(ch); }
 
 	static constexpr char_t to_char(uint_t uint)
 	{ return traits_t::to_char_type(uint); }
 
-	static constexpr char_t to_lower(char_t ch);@\skipnumbering{1920}@
-	static constexpr bool is_valid_char(char_t a)@\skipnumbering{1925}@
-	static constexpr bool is_valid_code(code_t a)@\skipnumbering{1930}@
-	static code_t to_code(char_t c)@\skipnumbering{1944}@
-	static char_t from_code(code_t c)@\skipnumbering{1954}@
+	static constexpr char_t to_lower(char_t ch);@\skipnumbering{1943}@
+	static constexpr bool is_valid_char(char_t a)@\skipnumbering{1948}@
+	static constexpr bool is_valid_code(code_t a)@\skipnumbering{1953}@
+	static code_t to_code(char_t c)@\skipnumbering{1967}@
+	static char_t from_code(code_t c)@\skipnumbering{1977}@
 	static constexpr code_t min_letter = 1;
-	static constexpr code_t max_letter = min_letter +@\skipnumbering{1958}@
+	static constexpr code_t max_letter = min_letter +@\skipnumbering{1981}@
 	static constexpr code_t header     = max_letter + 1;
 	static constexpr code_t empty_slot = 0;
 };
@@ -1601,7 +1601,7 @@ The sole role of \code{size\_traits\_t} is that of encapsulating the \pascal\
 %
 % $ hash-trie-source --size-traits --tex -t
 %
-\begin{hashtrielisting}[1976]
+\begin{hashtrielisting}[1999]
 struct size_traits_t
 {
 	static constexpr size_t max_count = 32767;
@@ -1628,9 +1628,9 @@ was compiled with the \emph{statistics collecting code} enabled, \ie\ when the
 \code{CONFIG\_HASH\_TRIE\_STATISTICS} configuration parameter was
 \define d.
 %
-% $ hash-trie-source --hash-trie --tex -t -r 2012-2014 -r 2025-2082 -r 2097-2176 -r 2178-2182 -r 2209-2216 -r 2222-2225 -r 2233-2235 -r 2237-2242 -r 2247-2257 -r 2267-2268 -l 2015:cpp-inner-types-traits-begin -l 2024:cpp-inner-types-traits-end -l 2187:cpp-types-first-line -l 2205:cpp-types-last-line -l 2236:cpp-make-alpha-expr
+% $ hash-trie-source --hash-trie --tex -t -r 2035-2037 -r 2048-2105 -r 2120-2199 -r 2201-2205 -r 2232-2239 -r 2245-2248 -r 2256-2258 -r 2260-2265 -r 2270-2280 -r 2290-2291 -l 2038:cpp-inner-types-traits-begin -l 2047:cpp-inner-types-traits-end -l 2210:cpp-types-first-line -l 2228:cpp-types-last-line -l 2259:cpp-make-alpha-expr
 %
-\begin{hashtrielisting}[1983]
+\begin{hashtrielisting}[2006]
 template<
 	typename C = char,
 	template<typename> class T = char_traits_t,
@@ -1659,7 +1659,7 @@ public:
 	void print_stats(std::basic_ostream<char_t>&) const;
 #endif
 
-private:@\skipnumbering{2015}@
+private:@\skipnumbering{2038}@
 	template<types_t t>@\label{cpp-inner-types-traits-begin}@
 	using types_traits_t = types_traits_t<HashTrie, t>;
 
@@ -1669,7 +1669,7 @@ private:@\skipnumbering{2015}@
 	using char_traits_t::min_letter;
 	using char_traits_t::max_letter;
 	using char_traits_t::empty_slot;
-	using char_traits_t::header;@\label{cpp-inner-types-traits-end}@@\skipnumbering{2083}@
+	using char_traits_t::header;@\label{cpp-inner-types-traits-end}@@\skipnumbering{2106}@
 	template<types_t i, types_t e>
 	struct array_of_t
 	{
@@ -1683,8 +1683,8 @@ private:@\skipnumbering{2015}@
 			static constexpr size_t lo =
 				types_traits_t<i>::min;
 			static constexpr size_t hi =
-				types_traits_t<i>::max;@\skipnumbering{2177}@
-		private:@\skipnumbering{2183}@
+				types_traits_t<i>::max;@\skipnumbering{2200}@
+		private:@\skipnumbering{2206}@
 			elem_t array[hi - lo + 1];
 		};
 	};
@@ -1710,24 +1710,24 @@ private:@\skipnumbering{2015}@
 	pointer_array_t sibling;@\label{cpp-types-last-line}@
 
 	// x_n = (alpha * n) % mod_x
-	pointer_t x;@\skipnumbering{2217}@
+	pointer_t x;@\skipnumbering{2240}@
 	static letter_t to_letter(char_t c)
 	{ return char_traits_t::to_code(c); }
 
 	static char_t to_char(letter_t l)
-	{ return char_traits_t::from_code(l); }  @\skipnumbering{2226}@
+	{ return char_traits_t::from_code(l); }  @\skipnumbering{2249}@
 	pointer_t find(const char_t*);
 
 	void print_word(pointer_t, std::basic_ostream<char_t>&, bool) const;
 	void dump_word(pointer_t, std::basic_ostream<char_t>&, bool&) const;
 	void dump_empty(std::basic_ostream<char_t>&) const;
 
-	static constexpr size_t make_alpha(size_t trie_size, size_t max_letter)@\skipnumbering{2236}@
-	{ return std::ceil(0.61803 * (trie_size - 2 * max_letter)); }@\label{cpp-make-alpha-expr}@@\skipnumbering{2243}@
+	static constexpr size_t make_alpha(size_t trie_size, size_t max_letter)@\skipnumbering{2259}@
+	{ return std::ceil(0.61803 * (trie_size - 2 * max_letter)); }@\label{cpp-make-alpha-expr}@@\skipnumbering{2266}@
 	static constexpr size_t alpha = make_alpha(trie_size, max_letter);
 	static constexpr size_t mod_x = trie_size - 2 * max_letter;
 	static constexpr size_t max_h = mod_x + max_letter;
-	static constexpr size_t max_x = mod_x - alpha;@\skipnumbering{2258}@
+	static constexpr size_t max_x = mod_x - alpha;@\skipnumbering{2281}@
 #ifdef CONFIG_HASH_TRIE_STATISTICS
 	struct stats_t
 	{
@@ -1736,7 +1736,7 @@ private:@\skipnumbering{2015}@
 		size_t duplicated_words = 0;
 		size_t empty_slots = 0;
 
-		Sys::clocks_t trie_time = {};@\skipnumbering{2269}@
+		Sys::clocks_t trie_time = {};@\skipnumbering{2292}@
 	};
 
 	mutable stats_t stats;
@@ -1814,9 +1814,9 @@ The constructor of class \code{HashTrie<>} is very simple: it initializes the
 inner structures and variables of the class exactly as Knuth does 
 \cite[\parapg{19}{159} and \parapg{23}{160}]{knuth:literate}:
 %
-% $ hash-trie-source --hash-trie-func=HashTrie --tex -t -l 2291:cpp-init-count-zero
+% $ hash-trie-source --hash-trie-func=HashTrie --tex -t -l 2314:cpp-init-count-zero
 %
-\begin{hashtrielisting}[2275]
+\begin{hashtrielisting}[2298]
 template<
 	typename C,
 	template<typename> class T,
@@ -1854,7 +1854,7 @@ is \define d, updates its \code{stats} structure:
 %
 % $ hash-trie-source --hash-trie-func=put --tex -t
 %
-\begin{hashtrielisting}[2621]
+\begin{hashtrielisting}[2644]
 template<
 	typename C,
 	template<typename> class T,
@@ -1894,9 +1894,9 @@ data structure -- it is the \cplusplus\ counterpart of Knuth's \pascal\ function
 \code{find\_buffer}
 \cite[\paras{20}{21} and \paraspp{24}{31}{159}{162}]{knuth:literate}:
 %
-% $ hash-trie-source --hash-trie-func=find --tex -t -r 2306-2421 -r 2430-2453 -r 2460-2482 -r 2484-2499 -r 2503-2509 -r 2516-2521 -r 2542 -r 2546 -r 2548 -r 2577 -r 2581 -r 2591 -l 2426:cpp-last-h-def -l 2571:cpp-delta-def-int -l 2500:cpp-last-h-assign-1 -l 2510:cpp-last-h-assign-2 -l 2584:cpp-delta-assign-1 -l 2594:cpp-delta-assign-2
+% $ hash-trie-source --hash-trie-func=find --tex -t -r 2329-2444 -r 2453-2476 -r 2483-2505 -r 2507-2522 -r 2526-2532 -r 2539-2544 -r 2565 -r 2569 -r 2571 -r 2600 -r 2604 -r 2614 -l 2449:cpp-last-h-def -l 2594:cpp-delta-def-int -l 2523:cpp-last-h-assign-1 -l 2533:cpp-last-h-assign-2 -l 2607:cpp-delta-assign-1 -l 2617:cpp-delta-assign-2
 %
-\begin{hashtrielisting}[2298]
+\begin{hashtrielisting}[2321]
 template<
 	typename C,
 	template<typename> class T,
@@ -1904,7 +1904,7 @@ template<
 typename
 	HashTrie<C, T, S>::pointer_t
 	HashTrie<C, T, S>::find(const char_t* str)
-{@\skipnumbering{2422}@
+{@\skipnumbering{2445}@
 	const pointer_t tolerance2 = tolerance;
 	// trial header location
 	pointer_t h;
@@ -1912,23 +1912,23 @@ typename
 	pointer_t last_h; //!!!INT int last_h;@\label{cpp-last-h-def}@
 
 	const auto get_set_for_computing_header_locations = [&]() {
-		// 24. Get set for computing header locations@\skipnumbering{2454}@
+		// 24. Get set for computing header locations@\skipnumbering{2477}@
 		if (x >= max_x)
 			x -= max_x;
 		else
 			x += alpha;
 
-		h = x + max_letter + 1; // now max_letter < h <= trie_size - max_letter@\skipnumbering{2483}@
-		if (h > max_h - tolerance) {@\skipnumbering{2500}@
+		h = x + max_letter + 1; // now max_letter < h <= trie_size - max_letter@\skipnumbering{2506}@
+		if (h > max_h - tolerance) {@\skipnumbering{2523}@
 			last_h = add(h, tolerance2) - mod_x;@\label{cpp-last-h-assign-1}@
 		}
-		else {@\skipnumbering{2510}@
+		else {@\skipnumbering{2533}@
 			last_h = h + tolerance;@\label{cpp-last-h-assign-2}@
 		}
 	};
 
 	const auto compute_the_next_trial_header_location = [&]() {
-		// 25. Compute the next trial header location h, or abort find@\skipnumbering{2522}@
+		// 25. Compute the next trial header location h, or abort find@\skipnumbering{2545}@
 		if (h == last_h)
 			return false;
 		if (h == max_h)
@@ -1948,11 +1948,11 @@ typename
 		// 21. Advance p to its child number c
 		if (link[p] == 0) {
 			// 27. Insert the firstborn child of p and move to it, or abort find
-			get_set_for_computing_header_locations();@\skipnumbering{2543}@
+			get_set_for_computing_header_locations();@\skipnumbering{2566}@
 			do {
 				if (!compute_the_next_trial_header_location())
-					return 0;@\skipnumbering{2547}@
-			} while (ch[h] != empty_slot || ch[h + c] != empty_slot);@\skipnumbering{2549}@
+					return 0;@\skipnumbering{2570}@
+			} while (ch[h] != empty_slot || ch[h + c] != empty_slot);@\skipnumbering{2572}@
 			link[p] = h;
 			link[h] = p;
 			p = h + c;
@@ -1980,10 +1980,10 @@ typename
 					bool slot_found;
 					// 31. Find a suitable place h to move, or abort find
 					slot_found = false;
-					get_set_for_computing_header_locations();@\skipnumbering{2578}@
+					get_set_for_computing_header_locations();@\skipnumbering{2601}@
 					do {
 						if (!compute_the_next_trial_header_location())
-							return 0;@\skipnumbering{2582}@
+							return 0;@\skipnumbering{2605}@
 						if (ch[h + c] == empty_slot) {
 							r = link[p];
 							auto delta = sub(h, r); //!!!INT delta = h - r;@\label{cpp-delta-assign-1}@
@@ -1992,7 +1992,7 @@ typename
 								r = sibling[r];
 							slot_found = ch[r + delta] == empty_slot;
 						}
-					} while (!slot_found);@\skipnumbering{2592}@
+					} while (!slot_found);@\skipnumbering{2615}@
 					q = h + c;
 					r = link[p];
 					auto delta = sub(h, r); //!!!INT delta = h - r;@\label{cpp-delta-assign-2}@

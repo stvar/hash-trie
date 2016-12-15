@@ -755,10 +755,10 @@ iterations.
 \section{\protect\cplusplus\ Implementation Excerpts}
 %
 % $ sha1sum hash-trie.cpp
-% 7ba8b1459f0198c93b78c9e1a96faae7f8512824  hash-trie.cpp
-% $ hash-trie-source --hash-trie --tex -t -r 1994-2010 -r 2012-2018 -r 2021 -r 2023-2206 -r 2209-2225 -r 2227-2231 -r 2233-2235 -r 2237-2242 -r 2254-2272 -l 2019:cpp-trie-size -l 2020:cpp-tolerance -l 2022:cpp-max-letter -l 2208:cpp-x -l 2243:cpp-alpha -l 2244:cpp-mod-x -l 2245:cpp-max-h -l 2246:cpp-max-x -l 2248:cpp-assert-begin -l 2253:cpp-assert-end
+% 1901535f6047804749deb5bbf5beb13845b486b2  hash-trie.cpp
+% $ hash-trie-source --hash-trie --tex -t -r 2017-2033 -r 2035-2041 -r 2044 -r 2046-2229 -r 2232-2248 -r 2250-2254 -r 2256-2258 -r 2260-2265 -r 2277-2295 -l 2042:cpp-trie-size -l 2043:cpp-tolerance -l 2045:cpp-max-letter -l 2231:cpp-x -l 2266:cpp-alpha -l 2267:cpp-mod-x -l 2268:cpp-max-h -l 2269:cpp-max-x -l 2271:cpp-assert-begin -l 2276:cpp-assert-end
 %
-\begin{hashtrielisting}[1983]
+\begin{hashtrielisting}[2006]
 template<
 	typename C = char,
 	template<typename> class T = char_traits_t,
@@ -769,16 +769,16 @@ class HashTrie :
 {
 public:
 	typedef S size_traits_t;
-	typedef T<C> char_traits_t;@\skipnumbering{2011}@
-private:@\skipnumbering{2019}@
+	typedef T<C> char_traits_t;@\skipnumbering{2034}@
+private:@\skipnumbering{2042}@
 	using size_traits_t::trie_size;@\label{cpp-trie-size}@
-	using size_traits_t::tolerance;@\label{cpp-tolerance}@@\skipnumbering{2022}@
-	using char_traits_t::max_letter;@\label{cpp-max-letter}@@\skipnumbering{2207}@
+	using size_traits_t::tolerance;@\label{cpp-tolerance}@@\skipnumbering{2045}@
+	using char_traits_t::max_letter;@\label{cpp-max-letter}@@\skipnumbering{2230}@
 	// x_n = (alpha * n) % mod_x
-	pointer_t x;@\label{cpp-x}@@\skipnumbering{2226}@
-	pointer_t find(const char_t*);@\skipnumbering{2232}@
-	static constexpr size_t make_alpha(size_t trie_size, size_t max_letter)@\skipnumbering{2236}@
-	{ return std::ceil(0.61803 * (trie_size - 2 * max_letter)); }@\skipnumbering{2243}@
+	pointer_t x;@\label{cpp-x}@@\skipnumbering{2249}@
+	pointer_t find(const char_t*);@\skipnumbering{2255}@
+	static constexpr size_t make_alpha(size_t trie_size, size_t max_letter)@\skipnumbering{2259}@
+	{ return std::ceil(0.61803 * (trie_size - 2 * max_letter)); }@\skipnumbering{2266}@
 	static constexpr size_t alpha = make_alpha(trie_size, max_letter);@\label{cpp-alpha}@
 	static constexpr size_t mod_x = trie_size - 2 * max_letter;@\label{cpp-mod-x}@
 	static constexpr size_t max_h = mod_x + max_letter;@\label{cpp-max-h}@
@@ -789,26 +789,26 @@ private:@\skipnumbering{2019}@
 	CXX_ASSERT(trie_size > 2 * max_letter);
 	CXX_ASSERT(max_h > tolerance);
 	CXX_ASSERT(mod_x > tolerance);
-	CXX_ASSERT(mod_x > alpha);@\label{cpp-assert-end}@@\skipnumbering{2273}@
+	CXX_ASSERT(mod_x > alpha);@\label{cpp-assert-end}@@\skipnumbering{2296}@
 };
 \end{hashtrielisting}
 %
-% $ hash-trie-source --hash-trie-func=HashTrie --tex -t -r 2281-2294 -l 2295:cpp-x-init
+% $ hash-trie-source --hash-trie-func=HashTrie --tex -t -r 2304-2317 -l 2318:cpp-x-init
 %
-\begin{hashtrielisting}[2275]
+\begin{hashtrielisting}[2298]
 template<
 	typename C,
 	template<typename> class T,
 	typename S>
 HashTrie<C, T, S>::HashTrie()
-{@\skipnumbering{2295}@
+{@\skipnumbering{2318}@
 	x = 0;@\label{cpp-x-init}@
 }
 \end{hashtrielisting}
 %
-% $ hash-trie-source --hash-trie-func=find --tex -t -r 2306-2421 -r 2430-2453 -r 2460-2482 -r 2484-2499 -r 2503-2509 -r 2516-2521 -r 2530-2618 -l 2422:cpp-tol2-init -l 2454:cpp-x-begin -l 2457:cpp-x-end -l 2459:cpp-post-h-assign-assert -l 2483:cpp-h-gt-max-h-minus-tol -l 2500:cpp-last-h-assign-1 -l 2510:cpp-last-h-assign-2 -l 2522:cpp-next-h-begin -l 2528:cpp-next-h-end
+% $ hash-trie-source --hash-trie-func=find --tex -t -r 2329-2444 -r 2453-2476 -r 2483-2505 -r 2507-2522 -r 2526-2532 -r 2539-2544 -r 2553-2641 -l 2445:cpp-tol2-init -l 2477:cpp-x-begin -l 2480:cpp-x-end -l 2482:cpp-post-h-assign-assert -l 2506:cpp-h-gt-max-h-minus-tol -l 2523:cpp-last-h-assign-1 -l 2533:cpp-last-h-assign-2 -l 2545:cpp-next-h-begin -l 2551:cpp-next-h-end
 %
-\begin{hashtrielisting}[2298]
+\begin{hashtrielisting}[2321]
 template<
 	typename C,
 	template<typename> class T,
@@ -816,7 +816,7 @@ template<
 typename
 	HashTrie<C, T, S>::pointer_t
 	HashTrie<C, T, S>::find(const char_t* str)
-{@\skipnumbering{2422}@
+{@\skipnumbering{2445}@
 	const pointer_t tolerance2 = tolerance;@\label{cpp-tol2-init}@
 	// trial header location
 	pointer_t h;
@@ -824,23 +824,23 @@ typename
 	pointer_t last_h; //!!!INT int last_h;
 
 	const auto get_set_for_computing_header_locations = [&]() {
-		// 24. Get set for computing header locations@\skipnumbering{2454}@
+		// 24. Get set for computing header locations@\skipnumbering{2477}@
 		if (x >= max_x)@\label{cpp-x-begin}@
 			x -= max_x;
 		else
 			x += alpha;@\label{cpp-x-end}@
 
-		h = x + max_letter + 1; // now max_letter < h <= trie_size - max_letter@\label{cpp-post-h-assign-assert}@@\skipnumbering{2483}@
-		if (h > max_h - tolerance) {@\label{cpp-h-gt-max-h-minus-tol}@@\skipnumbering{2500}@
+		h = x + max_letter + 1; // now max_letter < h <= trie_size - max_letter@\label{cpp-post-h-assign-assert}@@\skipnumbering{2506}@
+		if (h > max_h - tolerance) {@\label{cpp-h-gt-max-h-minus-tol}@@\skipnumbering{2523}@
 			last_h = add(h, tolerance2) - mod_x;@\label{cpp-last-h-assign-1}@
 		}
-		else {@\skipnumbering{2510}@
+		else {@\skipnumbering{2533}@
 			last_h = h + tolerance;@\label{cpp-last-h-assign-2}@
 		}
 	};
 
 	const auto compute_the_next_trial_header_location = [&]() {
-		// 25. Compute the next trial header location h, or abort find@\skipnumbering{2522}@
+		// 25. Compute the next trial header location h, or abort find@\skipnumbering{2545}@
 		if (h == last_h)@\label{cpp-next-h-begin}@
 			return false;
 		if (h == max_h)
@@ -848,7 +848,7 @@ typename
 		else
 			h ++;
 		return true;@\label{cpp-next-h-end}@
-	};@\skipnumbering{2619}@
+	};@\skipnumbering{2642}@
 }
 \end{hashtrielisting}
 %
