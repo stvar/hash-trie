@@ -268,19 +268,6 @@
 	prebreak=\srcprebreak,
 	emphstyle=\textbf,
 }
-\newcommand{\helplisting}[1]{%
-	\begin{spacing}{1.05}%
-	\newcommand{\postbreak}{%
-		\raisebox{0ex}[0ex][0ex]{%
-			\ensuremath{\hspace{14em}\hookrightarrow\hspace{2pt}}}}
-	\label{#1}
-	\lstinputlisting[
-		style=shelllistingstyle,
-		postbreak=\postbreak,
-		linewidth=.9\linewidth,
-	]{#1-help.txt}%
-	\end{spacing}%
-}
 \newcommand{\msg}[1]{%
 	\vspace{-\parskip}%
 	\begin{center}%
@@ -2102,7 +2089,38 @@ results upon compiling and linking the source file \code{hash-trie.cpp}.
 %
 The command line options of \hashtrie\ program are as follows:
 %
-\helplisting{hash-trie}
+\begin{shelllisting}
+$ ./hash-trie --help
+usage: hash-trie [OPTION]...
+where the options are:
+  -P|--[print-]config  action: print out the config parameters
+  -T|--[print-]types   action: print out the add/sub types table
+  -L|--load-only       action: only load the input into the hash trie
+  -p|--print[-trie]    action: print out all <word, count> pairs from
+                         the hash trie (default)
+  -d|--dump[-trie]     action: dump out the complete hash trie structure
+  -b|--[no-][dump-]backtrace
+                       dump a backtrace of the program on fatal error
+                         or otherwise do not (default not)
+  -c|--[no-][print-]chars
+                       print out characters instead of codes on structure
+                         dumps or otherwise do not (default not)
+  -w|--[no-][print-]words
+                       print out words when dumping out the hash trie
+                         or otherwise do not (default do)
+  -s|--[no-][print-]stats
+                       print out some statistics information
+                         or otherwise do not (default not)
+     --time-type=TYPE  use the specified time type when printing out
+                         timings; TYPE can be one of: real, user or sys;
+                         the default is real
+     --debug=WHAT      print out some debugging information; WHAT can
+                         be one of: probing
+     --no-debug        do not print debugging info at all (default)
+  -q|--[no-]quiet      be quiet or otherwise do not (default not)
+  -v|--version         print version numbers and exit
+  -?|--help            display this help info and exit
+\end{shelllisting}
 %
 The \hashtrie\ program takes input from standard input \code{stdin} -- when its
 action option is one of
