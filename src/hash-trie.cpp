@@ -1933,7 +1933,7 @@ struct char_traits_t
     static constexpr char_t to_char(uint_t uint)
     { return traits_t::to_char_type(uint); }
 
-    static constexpr char_t to_lower(char_t ch);
+    static char_t to_lower(char_t ch);
 
     static constexpr auto first_letter =
         to_int(to_char('a'));
@@ -1983,14 +1983,14 @@ struct char_traits_t
 };
 
 #if CONFIG_HASH_TRIE_CHAR_TYPE == 0
-template<> constexpr
+template<>
 char_traits_t<char>::char_t
 char_traits_t<char>::to_lower(char_t ch)
 { return tolower(ch); }
 #endif
 
 #if CONFIG_HASH_TRIE_CHAR_TYPE == 1
-template<> constexpr
+template<>
 char_traits_t<wchar_t>::char_t
 char_traits_t<wchar_t>::to_lower(char_t ch)
 { return towlower(ch); }
